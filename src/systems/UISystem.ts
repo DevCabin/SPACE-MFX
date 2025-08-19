@@ -1,4 +1,4 @@
-import { Ship, GameState } from '../types/GameTypes';
+import { Ship } from '../types/GameTypes';
 import { UpgradeState, UpgradeSystem } from './UpgradeSystem';
 import { BotState, BotSystem } from './BotSystem';
 

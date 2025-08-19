@@ -23,7 +23,7 @@ export class CosmicEggSystem {
     return { spaceMonsters, eggPositions };
   }
 
-  private static createSpaceMonster(asteroid: Asteroid, playerPosition: Vector2D): Enemy {
+  private static createSpaceMonster(asteroid: Asteroid, _playerPosition: Vector2D): Enemy {
     const monsterType = asteroid.monsterType || 'spider';
     
     // Boss-level stats - much tougher!

@@ -1,6 +1,5 @@
 import { Enemy, Projectile, ResourceDrop } from '../types/GameTypes';
 import { MathUtils } from '../utils/MathUtils';
-import { WeaponSystem } from './WeaponSystem';
 
 export class EnemyCombatSystem {
   private static firstEnemyKilled = false;

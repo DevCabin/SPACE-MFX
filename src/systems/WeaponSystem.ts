@@ -4,7 +4,6 @@ import { MathUtils } from '../utils/MathUtils';
 
 export class WeaponSystem {
   private static readonly MELEE_RANGE = 400; // Half viewport width (assuming 800px viewport)
-  private static readonly MELEE_DAMAGE = 25; // Heavy damage
   
   static createProjectile(ship: Ship): Projectile {
     const spawnDistance = ship.radius + 5;
@@ -86,7 +85,7 @@ export class WeaponSystem {
     };
   }
 
-  static updateBombs(projectiles: Projectile[], enemies: Enemy[], deltaTime: number): void {
+  static updateBombs(projectiles: Projectile[], enemies: Enemy[], _deltaTime: number): void {
     for (const projectile of projectiles) {
       if (!projectile.active || projectile.type !== 'bomb') continue;
       

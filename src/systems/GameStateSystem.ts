@@ -6,8 +6,6 @@ import { GameTimerSystem } from './GameTimerSystem';
 import { ScoreSystem } from './ScoreSystem';
 import { LeaderboardSystem } from './LeaderboardSystem';
 
-import { Mission } from '../types/GameTypes';
-
 export class GameStateSystem {
   static checkShipDestruction(gameState: GameState): void {
     if (gameState.ship.hullStrength <= 0) {
@@ -36,7 +34,6 @@ export class GameStateSystem {
     const playerPlanets = PlanetSystem.getPlayerPlanets(gameState.planets);
     const totalPlanets = gameState.planets.length;
     const allAsteroidsDestroyed = gameState.asteroids.length === 0;
-    const allEnemiesDefeated = gameState.enemies.length === 0;
     
     // Check mission-specific victory conditions
     switch (mission.victoryCondition) {

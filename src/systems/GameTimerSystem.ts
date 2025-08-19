@@ -1,5 +1,3 @@
-import { GameState } from '../types/GameTypes';
-
 export interface GameTimer {
   startTime: number;
   endTime: number | null;

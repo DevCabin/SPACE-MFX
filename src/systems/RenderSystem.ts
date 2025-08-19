@@ -787,7 +787,7 @@ export class RenderSystem {
     this.ctx.textAlign = 'left';
   }
 
-  renderDifficultySelection(difficulties: Difficulty[], selectedIndex: number, gameState: GameState): void {
+  renderDifficultySelection(difficulties: Difficulty[], selectedIndex: number, _gameState: GameState): void {
     const ctx = this.ctx;
     const canvas = this.canvas;
 
@@ -801,7 +801,6 @@ export class RenderSystem {
     ctx.textAlign = 'center';
     ctx.fillText('SELECT DIFFICULTY', canvas.width / 2, 80);
 
-    const statsY = gameState.currentLevel && gameState.currentLevel > 1 ? 280 : 260;
     ctx.fillStyle = '#cccccc';
     ctx.font = '16px monospace';
     ctx.fillText('Choose your challenge level', canvas.width / 2, 110);
@@ -968,7 +967,7 @@ export class RenderSystem {
     this.ctx.textAlign = 'left';
   }
   
-  private renderScoreVisualization(scoreBreakdown: any, stats: any, centerX: number, startY: number): void {
+  private renderScoreVisualization(scoreBreakdown: any, _stats: any, centerX: number, startY: number): void {
     // Create a space-themed radar chart showing score components
     const chartRadius = 80;
     const chartCenterY = startY + 80;
@@ -1062,7 +1061,7 @@ export class RenderSystem {
     this.ctx.textAlign = 'left';
   }
 
-  private renderShipLevelIndicator(ship: Ship, upgradeState: any): void {
+  private renderShipLevelIndicator(_ship: Ship, upgradeState: any): void {
     
     // Calculate total upgrade levels
     const shipUpgrades = upgradeState.shipUpgrades;

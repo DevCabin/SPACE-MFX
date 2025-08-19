@@ -161,7 +161,7 @@ export class PlanetSystem {
     return false; // Planet still owned
   }
 
-  static updatePlanetRegen(planets: Planet[], deltaTime: number): void {
+  static updatePlanetRegen(planets: Planet[], _deltaTime: number): void {
     const currentTime = performance.now() / 1000;
     
     for (const planet of planets) {

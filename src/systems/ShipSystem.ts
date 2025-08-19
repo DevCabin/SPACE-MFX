@@ -1,4 +1,4 @@
-import { Ship, Vector2D } from '../types/GameTypes';
+import { Ship } from '../types/GameTypes';
 import { MathUtils } from '../utils/MathUtils';
 import { ShipRole } from '../types/GameTypes';
 

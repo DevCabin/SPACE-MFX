@@ -106,9 +106,9 @@ export class LeaderboardSystem {
     const missionCounts: Record<string, number> = {};
     const roleCounts: Record<string, number> = {};
     
-    leaderboard.forEach(entry => {
-      missionCounts[entry.mission] = (missionCounts[entry.mission] || 0) + 1;
-      roleCounts[entry.shipRole] = (roleCounts[entry.shipRole] || 0) + 1;
+    leaderboard.forEach(_entry => {
+      missionCounts[_entry.mission] = (missionCounts[_entry.mission] || 0) + 1;
+      roleCounts[_entry.shipRole] = (roleCounts[_entry.shipRole] || 0) + 1;
     });
     
     const mostPopularMission = Object.keys(missionCounts).reduce((a, b) => 
@@ -133,7 +133,7 @@ export class LeaderboardSystem {
   }
 
   // Future: This can be replaced with API calls for Vercel deployment
-  static async saveToAPI(entry: LeaderboardEntry): Promise<boolean> {
+  static async saveToAPI(_entry: LeaderboardEntry): Promise<boolean> {
     // TODO: Implement API endpoint for Vercel
     // POST /api/leaderboard with entry data
     return false;
