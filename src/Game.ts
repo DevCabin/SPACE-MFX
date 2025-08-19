@@ -1,6 +1,6 @@
 import { GameState, WorldConfig } from './types/GameTypes';
 import { WorldGenerator } from './systems/WorldGenerator';
-import { ShipSystem, ShipInput } from './systems/ShipSystem';
+import { ShipSystem } from './systems/ShipSystem';
 import { CollisionSystem } from './systems/CollisionSystem';
 import { CameraSystem } from './systems/CameraSystem';
 import { RenderSystem } from './systems/RenderSystem';
@@ -16,8 +16,8 @@ import { ParticleSystem } from './systems/ParticleSystem';
 import { PlanetSystem } from './systems/PlanetSystem';
 import { BaseCombatSystem } from './systems/BaseCombatSystem';
 import { PlanetClaimAISystem } from './systems/PlanetClaimAISystem';
-import { UpgradeSystem, UpgradeState } from './systems/UpgradeSystem';
-import { BotSystem, BotState } from './systems/BotSystem';
+import { UpgradeSystem } from './systems/UpgradeSystem';
+import { BotSystem } from './systems/BotSystem';
 import { UISystem } from './systems/UISystem';
 import { SHIP_ROLES } from './data/ShipRoles';
 import { ShipRole, Mission } from './types/GameTypes';
@@ -408,7 +408,7 @@ export class Game {
     
     // Handle enemy spawning
     if (EnemySystem.shouldSpawnEnemy(gameTime, this.gameState.lastEnemySpawn, this.gameState.worldConfig.enemySpawnInterval)) {
-      this.spawnEnemyWave();
+      this.spawnEnemyWave(gameTime);
       this.scheduleNextAttack();
     }
     

@@ -1,10 +1,9 @@
-import { GameState, Asteroid, Ship, Vector2D } from '../types/GameTypes';
+import { GameState, Asteroid, Ship, Vector2D, Difficulty } from '../types/GameTypes';
 import { CameraSystem } from './CameraSystem';
 import { UISystem } from './UISystem';
 import { GameTimerSystem } from './GameTimerSystem';
 import { ScoreSystem } from './ScoreSystem';
 
-import { MISSIONS } from '../data/Missions';
 
 export class RenderSystem {
   private ctx: CanvasRenderingContext2D;
@@ -916,9 +915,9 @@ export class RenderSystem {
 
     // Reason
     if (gameState.currentLevel && gameState.currentLevel > 1) {
-      ctx.fillStyle = '#ffaa00';
-      ctx.font = '16px monospace';
-      ctx.fillText(`Level ${gameState.currentLevel} Complete!`, canvas.width / 2, 150);
+      this.ctx.fillStyle = '#ffaa00';
+      this.ctx.font = '16px monospace';
+      this.ctx.fillText(`Level ${gameState.currentLevel} Complete!`, this.canvas.width / 2, 150);
     }
     
     // Calculate and display score
@@ -1264,12 +1263,6 @@ export class RenderSystem {
       } else {
         this.ctx.fillStyle = '#aa0000';
         
-        // Bot count for player planets
-        if (planet.owner === 'player' && planet.planetBots.length > 0) {
-          const activeBots = planet.planetBots.filter((bot: any) => bot.active).length;
-          this.ctx.fillStyle = '#6699cc';
-          this.ctx.fillText(`${activeBots} defense bot${activeBots > 1 ? 's' : ''}`, 0, 26);
-        }
       }
       
       // Render planet bots
@@ -1595,9 +1588,5 @@ export class RenderSystem {
 
   worldToScreen(worldPos: Vector2D, camera: Vector2D, canvas: HTMLCanvasElement): Vector2D {
     return CameraSystem.worldToScreen(worldPos, camera, canvas);
-  }
-
-  getCanvas(): HTMLCanvasElement {
-    return this.canvas;
   }
 }

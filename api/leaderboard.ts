@@ -49,8 +49,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   } else if (req.method === 'POST') {
     // POST /api/leaderboard - Save new score
     try {
-      const entry: Omit<LeaderboardEntry, 'id' | 'timestamp'> = req.body;
-      
       // TODO: Validate entry data
       // TODO: Save to database
       // TODO: Return success response

@@ -1,6 +1,5 @@
 import { Ship, Vector2D, Enemy, ResourceDrop, Projectile } from '../types/GameTypes';
 import { MathUtils } from '../utils/MathUtils';
-import { WeaponSystem } from './WeaponSystem';
 
 export interface Bot {
   id: string;
@@ -305,7 +304,7 @@ export class BotSystem {
     };
   }
 
-  static getTotalEnergyDrain(botState: BotState): number {
+  static getTotalEnergyDrain(): number {
     return 0; // No passive energy drain
   }
 
