@@ -659,6 +659,207 @@ export class RenderSystem {
     }
   }
 
+  renderRoleSelection(roles: any[], selectedIndex: number): void {
+    // Semi-transparent overlay
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+    const centerX = this.canvas.width / 2;
+    const startY = 100;
+
+    // Title
+    this.ctx.fillStyle = '#00ff00';
+    this.ctx.font = 'bold 36px monospace';
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText('SELECT YOUR ROLE', centerX, startY);
+
+    // Instructions
+    this.ctx.fillStyle = '#cccccc';
+    this.ctx.font = '16px monospace';
+    this.ctx.fillText('Use UP/DOWN arrows to select, ENTER to confirm', centerX, startY + 40);
+
+    // Role list
+    for (let i = 0; i < roles.length; i++) {
+      const role = roles[i];
+      const y = startY + 100 + (i * 80);
+      const isSelected = i === selectedIndex;
+
+      // Selection highlight
+      if (isSelected) {
+        this.ctx.fillStyle = 'rgba(0, 255, 0, 0.2)';
+        this.ctx.fillRect(50, y - 35, this.canvas.width - 100, 70);
+        this.ctx.strokeStyle = '#00ff00';
+        this.ctx.lineWidth = 2;
+        this.ctx.strokeRect(50, y - 35, this.canvas.width - 100, 70);
+      }
+
+      // Role name
+      this.ctx.fillStyle = isSelected ? '#00ff00' : '#ffffff';
+      this.ctx.font = 'bold 24px monospace';
+      this.ctx.textAlign = 'left';
+      this.ctx.fillText(role.name, 80, y - 10);
+
+      // Role description
+      this.ctx.fillStyle = isSelected ? '#ccffcc' : '#aaaaaa';
+      this.ctx.font = '14px monospace';
+      this.ctx.fillText(role.description, 80, y + 10);
+
+      // Stats preview
+      this.ctx.fillStyle = isSelected ? '#88cc88' : '#888888';
+      this.ctx.font = '12px monospace';
+      const stats = role.stats;
+      const statsText = `Energy: ${stats.maxEnergy} | Hull: ${stats.maxHullStrength} | Cargo: ${stats.maxCargoMaterials + stats.maxCargoGems} | Damage: ${stats.weaponDamage}x`;
+      this.ctx.fillText(statsText, 80, y + 25);
+    }
+
+    // Reset text alignment
+    this.ctx.textAlign = 'left';
+  }
+
+  renderMissionSelection(missions: any[], selectedIndex: number): void {
+    // Semi-transparent overlay
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+    const centerX = this.canvas.width / 2;
+    const startY = 100;
+
+    // Title
+    this.ctx.fillStyle = '#00ff00';
+    this.ctx.font = 'bold 36px monospace';
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText('SELECT YOUR MISSION', centerX, startY);
+
+    // Instructions
+    this.ctx.fillStyle = '#cccccc';
+    this.ctx.font = '16px monospace';
+    this.ctx.fillText('Use UP/DOWN arrows to select, ENTER to confirm, ESC to go back', centerX, startY + 40);
+
+    // Mission list
+    for (let i = 0; i < missions.length; i++) {
+      const mission = missions[i];
+      const y = startY + 100 + (i * 120);
+      const isSelected = i === selectedIndex;
+
+      // Selection highlight
+      if (isSelected) {
+        this.ctx.fillStyle = 'rgba(0, 255, 0, 0.2)';
+        this.ctx.fillRect(50, y - 45, this.canvas.width - 100, 110);
+        this.ctx.strokeStyle = '#00ff00';
+        this.ctx.lineWidth = 2;
+        this.ctx.strokeRect(50, y - 45, this.canvas.width - 100, 110);
+      }
+
+      // Mission name
+      this.ctx.fillStyle = isSelected ? '#00ff00' : '#ffffff';
+      this.ctx.font = 'bold 24px monospace';
+      this.ctx.textAlign = 'left';
+      this.ctx.fillText(mission.name, 80, y - 15);
+
+      // Mission description
+      this.ctx.fillStyle = isSelected ? '#ccffcc' : '#aaaaaa';
+      this.ctx.font = '14px monospace';
+      this.ctx.fillText(mission.description, 80, y + 5);
+
+      // Mission objective
+      this.ctx.fillStyle = isSelected ? '#88cc88' : '#888888';
+      this.ctx.font = 'bold 12px monospace';
+      this.ctx.fillText(`OBJECTIVE: ${mission.objective}`, 80, y + 25);
+
+      // Victory condition
+      this.ctx.fillStyle = isSelected ? '#ffaa00' : '#666666';
+      this.ctx.font = '12px monospace';
+      let victoryText = '';
+      switch (mission.victoryCondition) {
+        case 'allAsteroidsMined':
+          victoryText = 'WIN: Destroy all asteroids';
+          break;
+        case 'allEnemiesDefeated':
+          victoryText = 'WIN: Eliminate all threats (bugs & enemies)';
+          break;
+        case 'allPlanetsColonized':
+          victoryText = 'WIN: Control all planets';
+          break;
+      }
+      this.ctx.fillText(victoryText, 80, y + 40);
+    }
+
+    // Reset text alignment
+    this.ctx.textAlign = 'left';
+  }
+
+  renderDifficultySelection(difficulties: Difficulty[], selectedIndex: number, gameState: GameState): void {
+    const ctx = this.ctx;
+    const canvas = this.canvas;
+
+    // Clear screen
+    ctx.fillStyle = '#000011';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Title
+    ctx.fillStyle = '#ff6600';
+    ctx.font = 'bold 32px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('SELECT DIFFICULTY', canvas.width / 2, 80);
+
+    const statsY = gameState.currentLevel && gameState.currentLevel > 1 ? 280 : 260;
+    ctx.fillStyle = '#cccccc';
+    ctx.font = '16px monospace';
+    ctx.fillText('Choose your challenge level', canvas.width / 2, 110);
+
+    // Difficulty options
+    const startY = 180;
+    const spacing = 120;
+
+    for (let i = 0; i < difficulties.length; i++) {
+      const difficulty = difficulties[i];
+      const y = startY + (i * spacing);
+      const isSelected = i === selectedIndex;
+
+      // Selection highlight
+      if (isSelected) {
+        ctx.fillStyle = 'rgba(255, 102, 0, 0.2)';
+        ctx.fillRect(50, y - 40, canvas.width - 100, 100);
+        ctx.strokeStyle = '#ff6600';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(50, y - 40, canvas.width - 100, 100);
+      }
+
+      // Difficulty name
+      ctx.fillStyle = isSelected ? '#ff6600' : '#ffffff';
+      ctx.font = 'bold 24px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${i + 1}. ${difficulty.name}`, canvas.width / 2, y);
+
+      // Description
+      ctx.fillStyle = '#cccccc';
+      ctx.font = '14px monospace';
+      ctx.fillText(difficulty.description, canvas.width / 2, y + 25);
+
+      // Stats
+      ctx.fillStyle = '#888888';
+      ctx.font = '12px monospace';
+      const spawnText = difficulty.enemySpawnMultiplier < 1 ? 
+        `${Math.round((1 - difficulty.enemySpawnMultiplier) * 100)}% faster spawns` : 
+        'Normal spawn rate';
+      const countText = difficulty.enemyCountMultiplier > 1 ? 
+        `${difficulty.enemyCountMultiplier}x enemies per wave` : 
+        'Normal enemy count';
+      const eggText = difficulty.cosmicEggMultiplier > 1 ? 
+        `${difficulty.cosmicEggMultiplier}x cosmic eggs` : 
+        'Normal cosmic eggs';
+      
+      ctx.fillText(`${spawnText} • ${countText} • ${eggText}`, canvas.width / 2, y + 45);
+    }
+
+    // Instructions
+    ctx.fillStyle = '#666666';
+    ctx.font = '14px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('UP/DOWN or W/S - Navigate • ENTER/SPACE - Select • Q - Quit', canvas.width / 2, canvas.height - 60);
+    ctx.fillText('ESC - Back to Role Selection', canvas.width / 2, canvas.height - 30);
+  }
+
   private renderMeter(label: string, current: number, max: number, x: number, y: number, width: number, height: number, color: string): void {
     // Background with subtle border
     this.ctx.fillStyle = '#222222';
@@ -715,9 +916,9 @@ export class RenderSystem {
 
     // Reason
     if (gameState.currentLevel && gameState.currentLevel > 1) {
-      this.ctx.fillStyle = '#ffaa00';
-      this.ctx.font = '16px monospace';
-      this.ctx.fillText(`Level ${gameState.currentLevel} Complete!`, this.canvas.width / 2, 150);
+      ctx.fillStyle = '#ffaa00';
+      ctx.font = '16px monospace';
+      ctx.fillText(`Level ${gameState.currentLevel} Complete!`, canvas.width / 2, 150);
     }
     
     // Calculate and display score
@@ -1353,212 +1554,19 @@ export class RenderSystem {
     ctx.lineWidth = 2;
     ctx.stroke();
 
+    // Instructions
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 14px monospace';
+    ctx.textAlign = 'center';
+    
+    // Always show next level option on victory
+    ctx.fillText('N - Next Level | R - Restart Game | Q - Quit to Title', canvas.width / 2, canvas.height - 40);
+
     // Warning text
     ctx.fillStyle = '#ff0000';
     ctx.font = 'bold 12px monospace';
     ctx.textAlign = 'left';
     ctx.fillText('OUT OF BOUNDS', warningX - 85, warningY + 15);
-  }
-
-  renderRoleSelection(roles: any[], selectedIndex: number): void {
-    // Semi-transparent overlay
-    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-    const centerX = this.canvas.width / 2;
-    const startY = 100;
-
-    // Title
-    this.ctx.fillStyle = '#00ff00';
-    this.ctx.font = 'bold 36px monospace';
-    this.ctx.textAlign = 'center';
-    this.ctx.fillText('SELECT YOUR ROLE', centerX, startY);
-
-    // Instructions
-    this.ctx.fillStyle = '#cccccc';
-    this.ctx.font = '16px monospace';
-    this.ctx.fillText('Use UP/DOWN arrows to select, ENTER to confirm', centerX, startY + 40);
-
-    // Role list
-    for (let i = 0; i < roles.length; i++) {
-      const role = roles[i];
-      const y = startY + 100 + (i * 80);
-      const isSelected = i === selectedIndex;
-
-      // Selection highlight
-      if (isSelected) {
-        this.ctx.fillStyle = 'rgba(0, 255, 0, 0.2)';
-        this.ctx.fillRect(50, y - 35, this.canvas.width - 100, 70);
-        this.ctx.strokeStyle = '#00ff00';
-        this.ctx.lineWidth = 2;
-        this.ctx.strokeRect(50, y - 35, this.canvas.width - 100, 70);
-      }
-
-      // Role name
-      this.ctx.fillStyle = isSelected ? '#00ff00' : '#ffffff';
-      this.ctx.font = 'bold 24px monospace';
-      this.ctx.textAlign = 'left';
-      this.ctx.fillText(role.name, 80, y - 10);
-
-      // Role description
-      this.ctx.fillStyle = isSelected ? '#ccffcc' : '#aaaaaa';
-      this.ctx.font = '14px monospace';
-      this.ctx.fillText(role.description, 80, y + 10);
-
-      // Stats preview
-      this.ctx.fillStyle = isSelected ? '#88cc88' : '#888888';
-      this.ctx.font = '12px monospace';
-      const stats = role.stats;
-      const statsText = `Energy: ${stats.maxEnergy} | Hull: ${stats.maxHullStrength} | Cargo: ${stats.maxCargoMaterials + stats.maxCargoGems} | Damage: ${stats.weaponDamage}x`;
-      this.ctx.fillText(statsText, 80, y + 25);
-    }
-
-    // Reset text alignment
-    this.ctx.textAlign = 'left';
-  }
-
-  renderMissionSelection(missions: any[], selectedIndex: number): void {
-    // Semi-transparent overlay
-    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-    const centerX = this.canvas.width / 2;
-    const startY = 100;
-
-    // Title
-    this.ctx.fillStyle = '#00ff00';
-    this.ctx.font = 'bold 36px monospace';
-    this.ctx.textAlign = 'center';
-    this.ctx.fillText('SELECT YOUR MISSION', centerX, startY);
-
-    // Instructions
-    this.ctx.fillStyle = '#cccccc';
-    this.ctx.font = '16px monospace';
-    this.ctx.fillText('Use UP/DOWN arrows to select, ENTER to confirm, ESC to go back', centerX, startY + 40);
-
-    // Mission list
-    for (let i = 0; i < missions.length; i++) {
-      const mission = missions[i];
-      const y = startY + 100 + (i * 120);
-      const isSelected = i === selectedIndex;
-
-      // Selection highlight
-      if (isSelected) {
-        this.ctx.fillStyle = 'rgba(0, 255, 0, 0.2)';
-        this.ctx.fillRect(50, y - 45, this.canvas.width - 100, 110);
-        this.ctx.strokeStyle = '#00ff00';
-        this.ctx.lineWidth = 2;
-        this.ctx.strokeRect(50, y - 45, this.canvas.width - 100, 110);
-      }
-
-      // Mission name
-      this.ctx.fillStyle = isSelected ? '#00ff00' : '#ffffff';
-      this.ctx.font = 'bold 24px monospace';
-      this.ctx.textAlign = 'left';
-      this.ctx.fillText(mission.name, 80, y - 15);
-
-      // Mission description
-      this.ctx.fillStyle = isSelected ? '#ccffcc' : '#aaaaaa';
-      this.ctx.font = '14px monospace';
-      this.ctx.fillText(mission.description, 80, y + 5);
-
-      // Mission objective
-      this.ctx.fillStyle = isSelected ? '#88cc88' : '#888888';
-      this.ctx.font = 'bold 12px monospace';
-      this.ctx.fillText(`OBJECTIVE: ${mission.objective}`, 80, y + 25);
-
-      // Victory condition
-      this.ctx.fillStyle = isSelected ? '#ffaa00' : '#666666';
-      this.ctx.font = '12px monospace';
-      let victoryText = '';
-      switch (mission.victoryCondition) {
-        case 'allAsteroidsMined':
-          victoryText = 'WIN: Destroy all asteroids';
-          break;
-        case 'allEnemiesDefeated':
-          victoryText = 'WIN: Eliminate all threats (bugs & enemies)';
-          break;
-        case 'allPlanetsColonized':
-          victoryText = 'WIN: Control all planets';
-          break;
-      }
-      this.ctx.fillText(victoryText, 80, y + 40);
-    }
-
-    // Reset text alignment
-    this.ctx.textAlign = 'left';
-  }
-
-  renderDifficultySelection(difficulties: any[], selectedIndex: number, gameState: GameState): void {
-    const ctx = this.ctx;
-    const canvas = this.canvas;
-
-    // Clear screen
-    ctx.fillStyle = '#000011';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Title
-    ctx.fillStyle = '#ff6600';
-    ctx.font = 'bold 32px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('SELECT DIFFICULTY', canvas.width / 2, 80);
-
-    const statsY = gameState.currentLevel && gameState.currentLevel > 1 ? 280 : 260;
-    ctx.fillStyle = '#cccccc';
-    ctx.font = '16px monospace';
-    ctx.fillText('Choose your challenge level', canvas.width / 2, 110);
-
-    // Difficulty options
-    const startY = 180;
-    const spacing = 120;
-
-    for (let i = 0; i < difficulties.length; i++) {
-      const difficulty = difficulties[i];
-      const y = startY + (i * spacing);
-      const isSelected = i === selectedIndex;
-
-      // Selection highlight
-      if (isSelected) {
-        ctx.fillStyle = 'rgba(255, 102, 0, 0.2)';
-        ctx.fillRect(50, y - 40, canvas.width - 100, 100);
-        ctx.strokeStyle = '#ff6600';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(50, y - 40, canvas.width - 100, 100);
-      }
-
-      // Difficulty name
-      ctx.fillStyle = isSelected ? '#ff6600' : '#ffffff';
-      ctx.font = 'bold 24px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText(`${i + 1}. ${difficulty.name}`, canvas.width / 2, y);
-
-      // Description
-      ctx.fillStyle = '#cccccc';
-      ctx.font = '14px monospace';
-      ctx.fillText(difficulty.description, canvas.width / 2, y + 25);
-
-      // Stats
-      ctx.fillStyle = '#888888';
-      ctx.font = '12px monospace';
-      const spawnText = difficulty.enemySpawnMultiplier < 1 ? 
-        `${Math.round((1 - difficulty.enemySpawnMultiplier) * 100)}% faster spawns` : 
-        'Normal spawn rate';
-      const countText = difficulty.enemyCountMultiplier > 1 ? 
-        `${difficulty.enemyCountMultiplier}x enemies per wave` : 
-        'Normal enemy count';
-      const eggText = difficulty.cosmicEggMultiplier > 1 ? 
-        `${difficulty.cosmicEggMultiplier}x cosmic eggs` : 
-        'Normal cosmic eggs';
-      
-      ctx.fillText(`${spawnText} • ${countText} • ${eggText}`, canvas.width / 2, y + 45);
-    }
-
-    // Instructions
-    ctx.fillStyle = '#666666';
-    ctx.font = '14px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('UP/DOWN or W/S - Navigate • ENTER/SPACE - Select • Q - Quit', canvas.width / 2, canvas.height - 60);
-    ctx.fillText('ESC - Back to Role Selection', canvas.width / 2, canvas.height - 30);
   }
 
   renderQuitConfirmation(): void {
@@ -1587,5 +1595,9 @@ export class RenderSystem {
 
   worldToScreen(worldPos: Vector2D, camera: Vector2D, canvas: HTMLCanvasElement): Vector2D {
     return CameraSystem.worldToScreen(worldPos, camera, canvas);
+  }
+
+  getCanvas(): HTMLCanvasElement {
+    return this.canvas;
   }
 }

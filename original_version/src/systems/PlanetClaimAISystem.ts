@@ -5,14 +5,13 @@ import { PlanetSystem } from './PlanetSystem';
 export class PlanetClaimAISystem {
   private static readonly CLAIM_PRIORITY_DISTANCE = 300;
   private static readonly DEFEND_PRIORITY_DISTANCE = 400;
-  // Commented out unused constant
-  // private static readonly _expansionCooldown = 300; // 5 minutes between expansions
+  private static readonly EXPANSION_COOLDOWN = 10; // seconds between base expansions
 
   static updateEnemyAI(
     enemies: Enemy[], 
     planets: Planet[], 
     playerShip: Ship, 
-    _deltaTime: number
+    deltaTime: number
   ): { claimAttempts: Enemy[], expansionAttempts: Enemy[] } {
     const claimAttempts: Enemy[] = [];
     const expansionAttempts: Enemy[] = [];
@@ -47,6 +46,7 @@ export class PlanetClaimAISystem {
   private static updateAIState(enemy: Enemy, planets: Planet[], playerShip: Ship): void {
     const unclaimedPlanets = PlanetSystem.getUnclaimedPlanets(planets);
     const enemyPlanets = PlanetSystem.getEnemyPlanets(planets);
+    const playerPlanets = PlanetSystem.getPlayerPlanets(planets);
 
     // Priority 1: Defend owned planets under attack
     const threatenedPlanet = this.findThreatenedPlanet(enemyPlanets, playerShip);

@@ -133,7 +133,7 @@ export class LeaderboardSystem {
   }
 
   // Future: This can be replaced with API calls for Vercel deployment
-  static async saveToAPI(_entry: LeaderboardEntry): Promise<boolean> {
+  static async saveToAPI(entry: LeaderboardEntry): Promise<boolean> {
     // TODO: Implement API endpoint for Vercel
     // POST /api/leaderboard with entry data
     return false;

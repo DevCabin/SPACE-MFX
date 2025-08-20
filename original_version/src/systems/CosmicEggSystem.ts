@@ -4,7 +4,7 @@ import { MathUtils } from '../utils/MathUtils';
 export class CosmicEggSystem {
   static checkCosmicEggDestruction(
     asteroids: Asteroid[], 
-    _playerPosition: Vector2D
+    playerPosition: Vector2D
   ): { spaceMonsters: Enemy[], eggPositions: Vector2D[] } {
     const spaceMonsters: Enemy[] = [];
     const eggPositions: Vector2D[] = [];
@@ -12,7 +12,7 @@ export class CosmicEggSystem {
     for (const asteroid of asteroids) {
       if (asteroid.isCosmicEgg && asteroid.health <= 0) {
         // Create space monster from destroyed cosmic egg
-        const monster = this.createSpaceMonster(asteroid, _playerPosition);
+        const monster = this.createSpaceMonster(asteroid, playerPosition);
         spaceMonsters.push(monster);
         eggPositions.push({ ...asteroid.position });
         
@@ -23,7 +23,7 @@ export class CosmicEggSystem {
     return { spaceMonsters, eggPositions };
   }
 
-  private static createSpaceMonster(asteroid: Asteroid, _playerPosition: Vector2D): Enemy {
+  private static createSpaceMonster(asteroid: Asteroid, playerPosition: Vector2D): Enemy {
     const monsterType = asteroid.monsterType || 'spider';
     
     // Boss-level stats - much tougher!
