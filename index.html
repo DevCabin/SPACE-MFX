@@ -7,7 +7,19 @@
     <title>Space Mining Game</title>
   </head>
   <body>
-    <div id="app"></div>
+    <!-- Title Screen -->
+    <div id="title-screen">
+      <div class="stars"></div>
+      <div class="title-container">
+        <h1 id="main-title">SPACE MFX</h1>
+        <div id="subtitle">
+          <a href="https://devcabin.com" target="_blank">A Space Adventure by George Featherstone</a>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Game Container (hidden initially) -->
+    <div id="app" style="display: none;"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
