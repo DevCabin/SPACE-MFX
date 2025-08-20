@@ -142,7 +142,7 @@ export interface GameState {
   lastEnemySpawn: number;
   lives: number;
   maxLives: number;
-  gameStatus: 'playing' | 'gameOver' | 'victory';
+  gameStatus: 'playing' | 'gameOver' | 'victory' | 'leaderboard';
   gameEndReason: string;
   upgradeState: import('../systems/UpgradeSystem').UpgradeState;
   botState: import('../systems/BotSystem').BotState;

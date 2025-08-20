@@ -52,6 +52,8 @@ export class RenderSystem {
       if (this.showMinimap) {
         this.renderMinimap(gameState);
       }
+    } else if (gameState.gameStatus === 'leaderboard') {
+      this.renderLeaderboardScreen(gameState);
     } else {
       this.renderEndScreen(gameState);
     }
@@ -736,32 +738,46 @@ export class RenderSystem {
     this.ctx.font = '14px monospace';
     this.ctx.fillText(ScoreSystem.getScoreDescription(scoreBreakdown.totalScore), centerX, startY + 150);
     
-    // Render score visualization
-    this.renderScoreVisualization(scoreBreakdown, stats, centerX, startY + 180);
+    // Side-by-side layout: Score visualization on left, Mission stats on right
+    const leftColumnX = centerX - 200; // Left side for score visualization
+    const rightColumnX = centerX + 50;  // Right side for mission statistics
+    
+    // Render score visualization on the left
+    this.renderScoreVisualization(scoreBreakdown, stats, leftColumnX, startY + 180);
 
-    // Basic Stats
+    // Mission Statistics on the right
     this.ctx.font = '16px monospace';
     this.ctx.fillStyle = '#cccccc';
-    this.ctx.fillText('MISSION STATISTICS', centerX, startY + 380);
+    this.ctx.textAlign = 'left';
+    this.ctx.fillText('MISSION STATISTICS', rightColumnX, startY + 200);
 
     this.ctx.font = '14px monospace';
     this.ctx.fillStyle = '#6699cc';
-    this.ctx.fillText(`Play Time: ${GameTimerSystem.formatDetailedTime(stats.playTime)}`, centerX, startY + 405);
+    this.ctx.fillText(`Play Time: ${GameTimerSystem.formatDetailedTime(stats.playTime)}`, rightColumnX, startY + 230);
     
     this.ctx.fillStyle = '#ff8800';
-    this.ctx.fillText(`Materials: ${stats.materialsCollected} | Asteroids: ${stats.asteroidsDestroyed} | Enemies: ${stats.enemiesDestroyed}`, centerX, startY + 425);
+    this.ctx.fillText(`Materials: ${Math.floor(stats.materialsCollected)}`, rightColumnX, startY + 250);
+    this.ctx.fillText(`Asteroids: ${stats.asteroidsDestroyed}`, rightColumnX, startY + 270);
+    this.ctx.fillText(`Enemies: ${stats.enemiesDestroyed}`, rightColumnX, startY + 290);
     
     this.ctx.fillStyle = '#888888';
-    this.ctx.fillText(`Planets: ${stats.planetsConquered} | Bases: ${stats.basesBuilt} | Space Monsters: ${stats.spaceMonsterKills}`, centerX, startY + 445);
+    this.ctx.fillText(`Planets: ${stats.planetsConquered}`, rightColumnX, startY + 310);
+    this.ctx.fillText(`Bases: ${stats.basesBuilt}`, rightColumnX, startY + 330);
+    this.ctx.fillText(`Space Monsters: ${stats.spaceMonsterKills}`, rightColumnX, startY + 350);
 
-    // Instructions
+    // Instructions - centered below both columns
     this.ctx.fillStyle = '#00ff00';
     this.ctx.font = 'bold 18px monospace';
-    this.ctx.fillText('N - Next Level', centerX, startY + 485);
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText('N - Next Level', centerX, startY + 420);
+    
+    this.ctx.fillStyle = '#ffaa00';
+    this.ctx.font = 'bold 18px monospace';
+    this.ctx.fillText('X - View Leaderboard', centerX, startY + 450);
     
     this.ctx.fillStyle = '#cccccc';
     this.ctx.font = '16px monospace';
-    this.ctx.fillText('R - Restart Game • Q - Quit to Title', centerX, startY + 525);
+    this.ctx.fillText('R - Restart Game • Q - Quit to Title', centerX, startY + 480);
 
     // Reset text alignment
     this.ctx.textAlign = 'left';
@@ -1574,6 +1590,91 @@ export class RenderSystem {
 
     // Reset text alignment
     this.ctx.textAlign = 'left';
+  }
+
+  renderLeaderboardScreen(_gameState: GameState): void {
+    // Semi-transparent overlay
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+    const centerX = this.canvas.width / 2;
+    const startY = 60;
+
+    // Title
+    this.ctx.fillStyle = '#00ff00';
+    this.ctx.font = 'bold 36px monospace';
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText('SPACE MFX LEADERBOARD', centerX, startY);
+
+    // Load and display leaderboard
+    const leaderboard = this.loadLeaderboard();
+    
+    if (leaderboard.length === 0) {
+      this.ctx.fillStyle = '#cccccc';
+      this.ctx.font = '20px monospace';
+      this.ctx.fillText('No scores yet! Be the first!', centerX, startY + 100);
+    } else {
+      // Display top 10 scores
+      const displayCount = Math.min(10, leaderboard.length);
+      
+      this.ctx.fillStyle = '#ffaa00';
+      this.ctx.font = 'bold 18px monospace';
+      this.ctx.fillText('TOP 10 SCORES', centerX, startY + 60);
+
+      // Headers
+      this.ctx.fillStyle = '#888888';
+      this.ctx.font = '14px monospace';
+      this.ctx.textAlign = 'left';
+      this.ctx.fillText('RANK', 100, startY + 90);
+      this.ctx.fillText('NAME', 180, startY + 90);
+      this.ctx.fillText('SCORE', 380, startY + 90);
+      this.ctx.fillText('MISSION', 500, startY + 90);
+      this.ctx.fillText('TIME', 680, startY + 90);
+
+      // Leaderboard entries
+      for (let i = 0; i < displayCount; i++) {
+        const entry = leaderboard[i];
+        const y = startY + 120 + (i * 30);
+        
+        // Highlight top 3
+        if (i < 3) {
+          this.ctx.fillStyle = i === 0 ? '#ffaa00' : i === 1 ? '#cccccc' : '#ff8800';
+          this.ctx.font = 'bold 16px monospace';
+        } else {
+          this.ctx.fillStyle = '#ffffff';
+          this.ctx.font = '14px monospace';
+        }
+
+        this.ctx.textAlign = 'left';
+        this.ctx.fillText(`#${i + 1}`, 100, y);
+        this.ctx.fillText(entry.playerName.substring(0, 15), 180, y);
+        this.ctx.fillText(entry.score.toString(), 380, y);
+        this.ctx.fillText(entry.mission.substring(0, 12), 500, y);
+        this.ctx.fillText(GameTimerSystem.formatTime(entry.playTime), 680, y);
+      }
+    }
+
+    // Instructions
+    this.ctx.fillStyle = '#cccccc';
+    this.ctx.font = '16px monospace';
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText('Press ESC to return', centerX, this.canvas.height - 50);
+
+    // Reset text alignment
+    this.ctx.textAlign = 'left';
+  }
+
+  private loadLeaderboard(): any[] {
+    try {
+      const stored = localStorage.getItem('space-mining-leaderboard');
+      if (!stored) return [];
+      
+      const leaderboard = JSON.parse(stored);
+      return leaderboard.slice(0, 10); // Return top 10
+    } catch (error) {
+      console.error('Failed to load leaderboard:', error);
+      return [];
+    }
   }
 
   worldToScreen(worldPos: Vector2D, camera: Vector2D, canvas: HTMLCanvasElement): Vector2D {
