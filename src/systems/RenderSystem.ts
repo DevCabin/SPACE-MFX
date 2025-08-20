@@ -4,7 +4,6 @@ import { UISystem } from './UISystem';
 import { GameTimerSystem } from './GameTimerSystem';
 import { ScoreSystem } from './ScoreSystem';
 
-import { MISSIONS } from '../data/Missions';
 
 export class RenderSystem {
   private ctx: CanvasRenderingContext2D;
@@ -768,7 +767,7 @@ export class RenderSystem {
     this.ctx.textAlign = 'left';
   }
   
-  private renderScoreVisualization(scoreBreakdown: any, stats: any, centerX: number, startY: number): void {
+  private renderScoreVisualization(scoreBreakdown: any, _stats: any, centerX: number, startY: number): void {
     // Create a space-themed radar chart showing score components
     const chartRadius = 80;
     const chartCenterY = startY + 80;
@@ -862,7 +861,7 @@ export class RenderSystem {
     this.ctx.textAlign = 'left';
   }
 
-  private renderShipLevelIndicator(ship: Ship, upgradeState: any): void {
+  private renderShipLevelIndicator(_ship: Ship, upgradeState: any): void {
     
     // Calculate total upgrade levels
     const shipUpgrades = upgradeState.shipUpgrades;
@@ -1062,13 +1061,6 @@ export class RenderSystem {
         this.ctx.fillStyle = '#00aa00';
       } else {
         this.ctx.fillStyle = '#aa0000';
-        
-        // Bot count for player planets
-        if (planet.owner === 'player' && planet.planetBots.length > 0) {
-          const activeBots = planet.planetBots.filter((bot: any) => bot.active).length;
-          this.ctx.fillStyle = '#6699cc';
-          this.ctx.fillText(`${activeBots} defense bot${activeBots > 1 ? 's' : ''}`, 0, 26);
-        }
       }
       
       // Render planet bots
@@ -1489,7 +1481,7 @@ export class RenderSystem {
     this.ctx.textAlign = 'left';
   }
 
-  renderDifficultySelection(difficulties: any[], selectedIndex: number, gameState: GameState): void {
+  renderDifficultySelection(difficulties: any[], selectedIndex: number, _gameState: GameState): void {
     const ctx = this.ctx;
     const canvas = this.canvas;
 
@@ -1503,7 +1495,6 @@ export class RenderSystem {
     ctx.textAlign = 'center';
     ctx.fillText('SELECT DIFFICULTY', canvas.width / 2, 80);
 
-    const statsY = gameState.currentLevel && gameState.currentLevel > 1 ? 280 : 260;
     ctx.fillStyle = '#cccccc';
     ctx.font = '16px monospace';
     ctx.fillText('Choose your challenge level', canvas.width / 2, 110);
