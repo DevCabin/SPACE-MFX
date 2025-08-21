@@ -105,13 +105,13 @@ function startGame() {
   }, 500);
 }
 
-// Add click handler to title screen
+// Add keyboard handler to title screen
 document.addEventListener('DOMContentLoaded', () => {
   const titleScreen = document.getElementById('title-screen')!;
   
-  // Add click handler after animations complete
+  // Add keyboard handler after animations complete
   setTimeout(() => {
-    titleScreen.addEventListener('click', startGame);
-    titleScreen.style.cursor = 'pointer';
+    document.addEventListener('keydown', startGame, { once: true });
+    titleScreen.style.cursor = 'default';
   }, 4500); // Wait for all animations to complete
 });

@@ -264,13 +264,13 @@ export class LeaderboardSystem {
         font-size: 12px;
       `;
 
-      const submitName = () => {
+      let submitName = () => {
         const name = input.value.trim().substring(0, 7);
         document.body.removeChild(overlay);
         resolve(name || 'Anonymous');
       };
 
-      const cancelInput = () => {
+      let cancelInput = () => {
         document.body.removeChild(overlay);
         resolve(null);
       };
@@ -290,35 +290,81 @@ export class LeaderboardSystem {
       overlay.appendChild(dialog);
       document.body.appendChild(overlay);
 
-      // Focus the input and select all text - multiple attempts for reliability
+      // Enhanced focus handling with more aggressive attempts
       const focusInput = () => {
         try {
           input.focus();
           input.select();
           updateCharCount();
           console.log('Input focused and text selected');
+          
+          // Force cursor to end of text if selection fails
+          setTimeout(() => {
+            input.setSelectionRange(input.value.length, input.value.length);
+          }, 10);
         } catch (error) {
           console.error('Failed to focus input:', error);
         }
       };
       
-      // Try multiple times to ensure focus works
+      // Multiple focus attempts with longer delays
+      setTimeout(focusInput, 10);
       setTimeout(focusInput, 50);
       setTimeout(focusInput, 100);
       setTimeout(focusInput, 200);
+      setTimeout(focusInput, 500);
       
-      // Also focus when clicked
-      input.addEventListener('click', () => {
+      // Enhanced click handling
+      input.addEventListener('click', (e) => {
+        e.stopPropagation();
         input.focus();
-        input.select();
+        // Allow normal text selection behavior
+      });
+      
+      input.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
       });
       
       // Force focus when overlay is clicked
       overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) {
+        if (e.target === overlay || e.target === dialog) {
+          e.preventDefault();
           input.focus();
         }
       });
+      
+      // Prevent any interference from other event listeners
+      document.addEventListener('keydown', (e) => {
+        if (document.body.contains(overlay)) {
+          // Only allow input-related keys to bubble up
+          if (!['Tab', 'Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) {
+            e.stopPropagation();
+          }
+        }
+      }, true);
+      
+      // Ensure input stays focused
+      const maintainFocus = () => {
+        if (document.body.contains(overlay) && document.activeElement !== input) {
+          input.focus();
+        }
+      };
+      
+      const focusInterval = setInterval(maintainFocus, 100);
+      
+      // Clean up interval when overlay is removed
+      const originalSubmitName = submitName;
+      const originalCancelInput = cancelInput;
+      
+      submitName = () => {
+        clearInterval(focusInterval);
+        originalSubmitName();
+      };
+      
+      cancelInput = () => {
+        clearInterval(focusInterval);
+        originalCancelInput();
+      };
     });
   }
 

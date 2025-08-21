@@ -35,7 +35,7 @@ static createShip(role?: ShipRole, initialPosition?: { x: number; y: number }): 
       weaponFireRate: 0.15
     };
 
-    const shipPosition = initialPosition || { x: 1000, y: 1000 }; // Default to world center
+    const shipPosition = initialPosition || { x: 0, y: 0 }; // Default to world center
     console.log(`🚀 Ship Created: Initial Position (${Math.round(shipPosition.x)}, ${Math.round(shipPosition.y)})`);
 
     return {

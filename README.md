@@ -1,14 +1,21 @@
 # SPACE-MFX: Space Mining Strategy Game
 
-## 🎯 Stable Restore Point - v1.0.0
-**Status**: ✅ FULLY FUNCTIONAL - Original styling and meter display restored  
-**Date**: August 19, 2025  
-**Commit**: Stable restore point with complete original functionality
+## 🎯 Latest Update - v1.1.0
+**Status**: ✅ FULLY FUNCTIONAL - Core gameplay fixes and UI improvements  
+**Date**: August 21, 2025  
+**Commit**: Critical gameplay fixes and keyboard-only interface
 
 ## Overview
 SPACE-MFX is an immersive browser-based space strategy game where players explore, mine, and battle across a dynamic cosmic environment. Manage resources, upgrade your ship, and complete challenging missions in this action-packed space adventure.
 
-### ✅ Recent Restoration (v1.0.0)
+### ✅ Latest Fixes (v1.1.0)
+- **Enemy Resource Dropping Fixed**: First enemy now properly drops massive resources (50 materials + 20 gems) in every new game
+- **Player Spawn Position Fixed**: Player now spawns in the center of the map instead of bottom-right corner
+- **Keyboard-Only Interface**: Title screen changed from "Click anywhere to start" to "Press any key to start" with full keyboard support
+- **Leaderboard Input System Enhanced**: Completely overhauled text input system for reliable name entry with proper focus management
+- **All core gameplay mechanics verified**: Resource collection, enemy combat, and progression systems working perfectly
+
+### ✅ Previous Restoration (v1.0.0)
 - **Original styling completely restored**: Dark theme with green accents and proper monospace fonts
 - **Meter display functionality restored**: Energy and Hull bars with original colors and styling
 - **All visual elements verified**: Ship level indicators, warnings, menus, and HUD elements

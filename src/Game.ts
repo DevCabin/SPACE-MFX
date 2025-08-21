@@ -287,6 +287,9 @@ export class Game {
   private selectMission(mission: Mission): void {
     this.gamePhase = 'playing';
     
+    // Reset enemy combat system for new game
+    EnemyCombatSystem.resetFirstEnemyFlag();
+    
     // Recreate game state with selected role and mission
     this.gameState = this.createInitialGameState();
     this.gameState.ship = ShipSystem.createShip(this.selectedRole!);
@@ -1081,6 +1084,9 @@ export class Game {
 
   restartGame(): void {
     if (this.selectedRole && this.gameState.selectedMission) {
+      // Reset enemy combat system for restart
+      EnemyCombatSystem.resetFirstEnemyFlag();
+      
       // Quick restart with current role
       const currentMission = this.gameState.selectedMission; // Store mission before reset
       this.gameState = this.createInitialGameState();

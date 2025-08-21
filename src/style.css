@@ -109,7 +109,7 @@ body {
 
 /* Add click-to-continue hint */
 #title-screen::after {
-  content: "Click anywhere to start";
+  content: "Press any key to start";
   position: absolute;
   bottom: 50px;
   transform: translateX(-50%);

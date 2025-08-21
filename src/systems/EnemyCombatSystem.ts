@@ -4,6 +4,11 @@ import { MathUtils } from '../utils/MathUtils';
 export class EnemyCombatSystem {
   private static firstEnemyKilled = false;
 
+  // Reset the first enemy flag for new games
+  static resetFirstEnemyFlag(): void {
+    this.firstEnemyKilled = false;
+  }
+
   static checkProjectileEnemyCollisions(
     projectiles: Projectile[], 
     enemies: Enemy[]
