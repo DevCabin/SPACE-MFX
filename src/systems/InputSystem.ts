@@ -4,8 +4,6 @@ export class InputSystem {
   private keys: Set<string> = new Set();
   private keysPressed: Set<string> = new Set();
   private keysReleased: Set<string> = new Set();
-  private mousePressed: boolean = false;
-  private mousePosition: { x: number; y: number } = { x: 0, y: 0 };
   private canvas: HTMLCanvasElement;
 
   constructor(canvas: HTMLCanvasElement) {
@@ -33,32 +31,6 @@ export class InputSystem {
       e.preventDefault();
     });
 
-    // Mouse events for shooting
-    this.canvas.addEventListener('mousedown', (e) => {
-      if (e.button === 0) { // Left click
-        this.mousePressed = true;
-        e.preventDefault();
-      }
-    });
-
-    this.canvas.addEventListener('mouseup', (e) => {
-      if (e.button === 0) { // Left click
-        this.mousePressed = false;
-        e.preventDefault();
-      }
-    });
-
-    // Prevent context menu on right click
-    this.canvas.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
-    });
-
-    // Mouse movement tracking
-    this.canvas.addEventListener('mousemove', (e) => {
-      const rect = this.canvas.getBoundingClientRect();
-      this.mousePosition.x = e.clientX - rect.left;
-      this.mousePosition.y = e.clientY - rect.top;
-    });
 
     // Ensure canvas stays focused
     this.canvas.addEventListener('blur', () => {
@@ -71,12 +43,20 @@ export class InputSystem {
       thrust: this.keys.has('ArrowUp') || this.keys.has('KeyW'),
       rotateLeft: this.keys.has('ArrowLeft') || this.keys.has('KeyA'),
       rotateRight: this.keys.has('ArrowRight') || this.keys.has('KeyD'),
-      fire: this.keys.has('Space') || this.mousePressed,
+      fire: this.keys.has('Space'),
       bomb: this.keys.has('KeyB'),
       buyBomb: this.keys.has('KeyN'),
       emergencyMelee: this.keys.has('KeyK'),
       reverse: this.keys.has('ArrowDown') || this.keys.has('KeyS')
     };
+  }
+
+  // Add method to handle leaderboard key press
+  handleLeaderboardInput(): boolean {
+    if (this.wasKeyJustPressed('KeyX')) {
+      return true; // Signal to toggle leaderboard
+    }
+    return false;
   }
 
   isKeyPressed(key: string): boolean {
@@ -94,9 +74,5 @@ export class InputSystem {
   clearFrameInput(): void {
     this.keysPressed.clear();
     this.keysReleased.clear();
-  }
-
-  getMousePosition(): { x: number; y: number } {
-    return { ...this.mousePosition };
   }
 }

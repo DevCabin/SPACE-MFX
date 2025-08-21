@@ -27,8 +27,19 @@ import { Difficulty } from './types/GameTypes';
 import { CosmicEggSystem } from './systems/CosmicEggSystem';
 import { MathUtils } from './utils/MathUtils';
 import { GameTimerSystem } from './systems/GameTimerSystem';
+import { LeaderboardSystem } from './systems/LeaderboardSystem';
 
 export class Game {
+  private async saveGameToLeaderboard(): Promise<void> {
+    if (this.gameState.gameStatus === 'victory') {
+      try {
+        await LeaderboardSystem.saveGameStateToLeaderboard(this.gameState);
+        console.log('Game score saved to leaderboard');
+      } catch (error) {
+        console.error('Failed to save game to leaderboard:', error);
+      }
+    }
+  }
   private gameState: GameState;
   private renderSystem: RenderSystem;
   private inputSystem: InputSystem;
@@ -184,6 +195,7 @@ export class Game {
       return;
     }
     
+    
     // Handle role selection input
     if (this.inputSystem.wasKeyJustPressed('ArrowUp') || this.inputSystem.wasKeyJustPressed('KeyW')) {
       this.selectedRoleIndex = Math.max(0, this.selectedRoleIndex - 1);
@@ -213,6 +225,7 @@ export class Game {
       this.showQuitConfirmation = true;
       return;
     }
+    
     
     // Handle difficulty selection input
     if (this.inputSystem.wasKeyJustPressed('ArrowUp') || this.inputSystem.wasKeyJustPressed('KeyW')) {
@@ -249,6 +262,7 @@ export class Game {
       this.showQuitConfirmation = true;
       return;
     }
+    
     
     // Handle mission selection input
     if (this.inputSystem.wasKeyJustPressed('ArrowUp') || this.inputSystem.wasKeyJustPressed('KeyW')) {
@@ -333,6 +347,11 @@ export class Game {
       // Check for next level input (only on victory)
       if (this.gameState.gameStatus === 'victory' && this.inputSystem.wasKeyJustPressed('KeyN')) {
         this.advanceToNextLevel();
+      }
+      
+      // Check for leaderboard input
+      if (this.inputSystem.handleLeaderboardInput()) {
+        UISystem.toggleLeaderboard();
       }
       
       // Allow minimap toggle even when game is over
@@ -928,11 +947,12 @@ export class Game {
       }
     }
     
+    
     // Handle upgrade menu toggle
     if (this.inputSystem.wasKeyJustPressed('KeyU')) {
       UISystem.toggleUpgradeMenu();
       if (UISystem.isUpgradeMenuOpen()) {
-        console.log('Upgrade menu opened - use TAB to navigate, ENTER to purchase');
+        console.log('Upgrade menu opened - click to select or use TAB to navigate, ENTER to purchase');
       }
       console.log(`Upgrade menu ${UISystem.isUpgradeMenuOpen() ? 'opened' : 'closed'}`);
     }
@@ -945,7 +965,7 @@ export class Game {
         // Menu just opened
         const canShow = BotSystem.canShowPurchaseOption(this.gameState.ship, this.gameState.botState);
         if (canShow) {
-          console.log('Bot menu opened - use TAB to navigate, ENTER to purchase');
+          console.log('Bot menu opened - click to select or use TAB to navigate, ENTER to purchase');
         } else {
           console.log(`Bot menu opened - collect ${this.gameState.botState.cargoThreshold} total cargo to unlock bot purchases`);
         }
@@ -1024,6 +1044,11 @@ export class Game {
     // Render quit confirmation overlay if needed
     if (this.showQuitConfirmation) {
       this.renderSystem.renderQuitConfirmation();
+    }
+    
+    // Render leaderboard if open
+    if (UISystem.isLeaderboardOpen()) {
+      UISystem.renderLeaderboard(this.renderSystem.getContext(), this.renderSystem.getCanvas());
     }
   }
 
@@ -1111,10 +1136,13 @@ export class Game {
     }
   }
 
-  private advanceToNextLevel(): void {
+  private async advanceToNextLevel(): Promise<void> {
     // Increment level
     this.currentLevel++;
     this.gameState.currentLevel = this.currentLevel;
+    
+    // Save game to leaderboard before advancing
+    await this.saveGameToLeaderboard();
     
     // Apply level scaling to world config
     const baseAsteroidCount = 35;

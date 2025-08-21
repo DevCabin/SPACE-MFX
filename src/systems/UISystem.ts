@@ -5,6 +5,7 @@ import { BotState, BotSystem } from './BotSystem';
 export interface UIState {
   showUpgradeMenu: boolean;
   showBotMenu: boolean;
+  showLeaderboard: boolean;
   selectedUpgradeTab: 'ship' | 'base';
   selectedUpgradeIndex: number;
   selectedBotOption: number;
@@ -14,6 +15,7 @@ export class UISystem {
   private static uiState: UIState = {
     showUpgradeMenu: false,
     showBotMenu: false,
+    showLeaderboard: false,
     selectedUpgradeTab: 'ship',
     selectedUpgradeIndex: 0,
     selectedBotOption: 0
@@ -38,8 +40,104 @@ export class UISystem {
   static closeAllMenus(): void {
     this.uiState.showUpgradeMenu = false;
     this.uiState.showBotMenu = false;
+    this.uiState.showLeaderboard = false;
     this.uiState.selectedUpgradeIndex = 0;
     this.uiState.selectedBotOption = 0;
+  }
+
+  static toggleLeaderboard(): void {
+    this.uiState.showLeaderboard = !this.uiState.showLeaderboard;
+    if (this.uiState.showLeaderboard) {
+      this.uiState.showUpgradeMenu = false;
+      this.uiState.showBotMenu = false;
+    }
+  }
+
+  static isLeaderboardOpen(): boolean {
+    return this.uiState.showLeaderboard;
+  }
+
+  static renderLeaderboard(
+    ctx: CanvasRenderingContext2D, 
+    canvas: HTMLCanvasElement
+  ): void {
+    if (!this.uiState.showLeaderboard) return;
+
+    const menuWidth = 600;
+    const menuHeight = 700;
+    const menuX = (canvas.width - menuWidth) / 2;
+    const menuY = (canvas.height - menuHeight) / 2;
+
+    // Semi-transparent background
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+    ctx.fillRect(menuX, menuY, menuWidth, menuHeight);
+
+    // Border
+    ctx.strokeStyle = '#00ff00';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(menuX, menuY, menuWidth, menuHeight);
+
+    // Title
+    ctx.fillStyle = '#00ff00';
+    ctx.font = 'bold 24px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('LEADERBOARD', menuX + menuWidth / 2, menuY + 40);
+
+    // Fetch leaderboard entries
+    const leaderboard = JSON.parse(localStorage.getItem('space-mining-leaderboard') || '[]');
+    
+    // Render leaderboard headers
+    ctx.fillStyle = '#cccccc';
+    ctx.font = 'bold 14px monospace';
+    ctx.textAlign = 'left';
+    
+    const headers = ['Rank', 'Player', 'Score', 'Mission', 'Ship Role', 'Play Time'];
+    const columnWidths = [50, 150, 100, 100, 100, 100];
+    let currentX = menuX + 50;
+    
+    headers.forEach((header, index) => {
+      ctx.fillText(header, currentX, menuY + 80);
+      currentX += columnWidths[index];
+    });
+
+    // Render leaderboard entries
+    ctx.font = '12px monospace';
+    leaderboard.slice(0, 10).forEach((entry: any, index: number) => {
+      const y = menuY + 110 + (index * 30);
+      currentX = menuX + 50;
+      
+      // Rank
+      ctx.fillStyle = index === 0 ? '#ffd700' : index === 1 ? '#c0c0c0' : index === 2 ? '#cd7f32' : '#ffffff';
+      ctx.fillText(`#${index + 1}`, currentX, y);
+      currentX += columnWidths[0];
+      
+      // Player Name
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(entry.playerName || 'Anonymous', currentX, y);
+      currentX += columnWidths[1];
+      
+      // Score
+      ctx.fillText(entry.score.toLocaleString(), currentX, y);
+      currentX += columnWidths[2];
+      
+      // Mission
+      ctx.fillText(entry.mission || 'Unknown', currentX, y);
+      currentX += columnWidths[3];
+      
+      // Ship Role
+      ctx.fillText(entry.shipRole || 'Unknown', currentX, y);
+      currentX += columnWidths[4];
+      
+      // Play Time
+      const minutes = Math.floor((entry.playTime || 0) / 60);
+      ctx.fillText(`${minutes} mins`, currentX, y);
+    });
+
+    // Instructions
+    ctx.fillStyle = '#cccccc';
+    ctx.textAlign = 'center';
+    ctx.font = '12px monospace';
+    ctx.fillText('Press X to close Leaderboard', menuX + menuWidth / 2, menuY + menuHeight - 20);
   }
 
   static isUpgradeMenuOpen(): boolean {
@@ -143,7 +241,7 @@ export class UISystem {
     ctx.fillStyle = '#cccccc';
     ctx.font = '12px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('UP/DOWN or TAB to navigate • ENTER to purchase • U to close', menuX + menuWidth / 2, menuY + menuHeight - 10);
+    ctx.fillText('Click to select • UP/DOWN or TAB to navigate • ENTER to purchase • U to close', menuX + menuWidth / 2, menuY + menuHeight - 10);
 
     ctx.textAlign = 'left'; // Reset alignment
   }
@@ -343,7 +441,7 @@ export class UISystem {
         }
       } else {
         ctx.fillStyle = '#88cc88';
-        ctx.fillText('Press ENTER to purchase', menuX + 20, menuY + 130);
+        ctx.fillText('Click or press ENTER to purchase', menuX + 20, menuY + 130);
       }
     } else {
       ctx.fillStyle = '#666666';
@@ -354,7 +452,7 @@ export class UISystem {
     ctx.fillStyle = '#cccccc';
     ctx.font = '12px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('UP/DOWN or TAB to navigate • ENTER to select • P to close', menuX + menuWidth / 2, menuY + menuHeight - 10);
+    ctx.fillText('Click to select • UP/DOWN or TAB to navigate • ENTER to select • P to close', menuX + menuWidth / 2, menuY + menuHeight - 10);
 
     ctx.textAlign = 'left'; // Reset alignment
   }
@@ -378,5 +476,142 @@ export class UISystem {
     ctx.fillStyle = '#ffaa00';
     ctx.font = '12px monospace';
     ctx.fillText('Defending & Collecting', x, y + 18);
+  }
+
+  // Mouse interaction methods for menus
+  static getUpgradeAtPosition(mouseX: number, mouseY: number, canvas: HTMLCanvasElement): number | null {
+    if (!this.uiState.showUpgradeMenu) return null;
+
+    const menuWidth = 500;
+    const menuHeight = 600;
+    const menuX = (canvas.width - menuWidth) / 2;
+    const menuY = (canvas.height - menuHeight) / 2;
+    
+    // Enhanced debug logging with more precise coordinate tracking
+    console.log('Upgrade Menu Precise Mouse Interaction:', {
+      rawMousePosition: { x: mouseX, y: mouseY },
+      canvasDetails: {
+        width: canvas.width,
+        height: canvas.height,
+        pixelRatio: window.devicePixelRatio || 1
+      },
+      menuBounds: {
+        x: menuX,
+        y: menuY,
+        width: menuWidth,
+        height: menuHeight
+      },
+      menuState: {
+        visible: this.uiState.showUpgradeMenu,
+        selectedTab: this.uiState.selectedUpgradeTab
+      }
+    });
+    
+    // More robust bounds checking with pixel ratio consideration
+    const pixelRatio = window.devicePixelRatio || 1;
+    const adjustedMouseX = mouseX * pixelRatio;
+    const adjustedMouseY = mouseY * pixelRatio;
+    
+    if (adjustedMouseX < menuX || adjustedMouseX > menuX + menuWidth || 
+        adjustedMouseY < menuY || adjustedMouseY > menuY + menuHeight) {
+      console.log('Mouse outside upgrade menu precise bounds');
+      return null;
+    }
+
+    const startY = menuY + 50;
+    const itemHeight = 70;
+    const maxItems = this.uiState.selectedUpgradeTab === 'ship' ? 6 : 2;
+
+    for (let i = 0; i < maxItems; i++) {
+      const itemY = startY + (i * itemHeight);
+      const itemRect = {
+        x: menuX + 15,
+        y: itemY - 25,
+        width: menuWidth - 30,
+        height: 65
+      };
+
+      // Ultra-detailed logging for menu item interaction
+      const isMouseInside = 
+        adjustedMouseX >= itemRect.x && 
+        adjustedMouseX <= itemRect.x + itemRect.width &&
+        adjustedMouseY >= itemRect.y && 
+        adjustedMouseY <= itemRect.y + itemRect.height;
+
+      console.log(`Menu Item ${i} Interaction Details:`, {
+        itemRect,
+        adjustedMousePosition: { x: adjustedMouseX, y: adjustedMouseY },
+        isMouseInside,
+        mouseRelativeToItem: {
+          x: adjustedMouseX - itemRect.x,
+          y: adjustedMouseY - itemRect.y
+        }
+      });
+
+      if (isMouseInside) {
+        console.log(`✅ Selected menu item: ${i}`);
+        return i;
+      }
+    }
+
+    console.log('❌ No menu item selected');
+    return null;
+  }
+  // Add a method to help debug mouse interactions
+  static debugMouseInteraction(mouseX: number, mouseY: number, canvas: HTMLCanvasElement): void {
+    console.log('Global Mouse Interaction Debug:', {
+      mousePosition: { x: mouseX, y: mouseY },
+      canvasDimensions: {
+        width: canvas.width,
+        height: canvas.height
+      },
+      menuStates: {
+        upgradeMenuOpen: this.uiState.showUpgradeMenu,
+        botMenuOpen: this.uiState.showBotMenu
+      }
+    });
+  }
+
+  static getBotOptionAtPosition(mouseX: number, mouseY: number, canvas: HTMLCanvasElement): number | null {
+    if (!this.uiState.showBotMenu) return null;
+
+    const menuWidth = 400;
+    const menuHeight = 250;
+    const menuX = (canvas.width - menuWidth) / 2;
+    const menuY = (canvas.height - menuHeight) / 2;
+    
+    // Check if mouse is within menu bounds
+    if (mouseX < menuX || mouseX > menuX + menuWidth || 
+        mouseY < menuY || mouseY > menuY + menuHeight) {
+      return null;
+    }
+
+    // Check if clicking on the purchase bot option
+    const purchaseRect = {
+      x: menuX + 10,
+      y: menuY + 65,
+      width: menuWidth - 20,
+      height: 75
+    };
+
+    if (mouseX >= purchaseRect.x && mouseX <= purchaseRect.x + purchaseRect.width &&
+        mouseY >= purchaseRect.y && mouseY <= purchaseRect.y + purchaseRect.height) {
+      return 0; // First and only option for now
+    }
+
+    return null;
+  }
+
+  static setSelectedUpgradeIndex(index: number): void {
+    const maxOptions = this.uiState.selectedUpgradeTab === 'ship' ? 6 : 2;
+    if (index >= 0 && index < maxOptions) {
+      this.uiState.selectedUpgradeIndex = index;
+    }
+  }
+
+  static setSelectedBotOption(index: number): void {
+    if (index >= 0 && index < 1) { // Only one option for now
+      this.uiState.selectedBotOption = index;
+    }
   }
 }

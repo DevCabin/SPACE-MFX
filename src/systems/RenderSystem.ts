@@ -20,6 +20,14 @@ export class RenderSystem {
     return this.canvas;
   }
 
+  getContext(): CanvasRenderingContext2D {
+    const ctx = this.canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Unable to get canvas rendering context');
+    }
+    return ctx;
+  }
+
   toggleMinimap(): void {
     this.showMinimap = !this.showMinimap;
   }
@@ -739,8 +747,8 @@ export class RenderSystem {
     this.ctx.fillText(ScoreSystem.getScoreDescription(scoreBreakdown.totalScore), centerX, startY + 150);
     
     // Side-by-side layout: Score visualization on left, Mission stats on right
-    const leftColumnX = centerX - 200; // Left side for score visualization
-    const rightColumnX = centerX + 50;  // Right side for mission statistics
+    const leftColumnX = centerX - 250; // Move score visualization further left
+    const rightColumnX = centerX + 150;  // Move mission statistics further right for more separation
     
     // Render score visualization on the left
     this.renderScoreVisualization(scoreBreakdown, stats, leftColumnX, startY + 180);
@@ -1385,7 +1393,7 @@ export class RenderSystem {
     // Instructions
     this.ctx.fillStyle = '#cccccc';
     this.ctx.font = '16px monospace';
-    this.ctx.fillText('Use UP/DOWN arrows to select, ENTER to confirm', centerX, startY + 40);
+    this.ctx.fillText('Click to select or use UP/DOWN arrows + ENTER', centerX, startY + 40);
 
     // Role list
     for (let i = 0; i < roles.length; i++) {
@@ -1679,5 +1687,71 @@ export class RenderSystem {
 
   worldToScreen(worldPos: Vector2D, camera: Vector2D, canvas: HTMLCanvasElement): Vector2D {
     return CameraSystem.worldToScreen(worldPos, camera, canvas);
+  }
+
+  getRoleAtPosition(mouseX: number, mouseY: number, canvas: HTMLCanvasElement, roles: any[]): number | null {
+    const startY = 100;
+    const itemHeight = 80;
+    
+    for (let i = 0; i < roles.length; i++) {
+      const y = startY + (i * itemHeight);
+      const rect = {
+        x: 50,
+        y: y - 35,
+        width: canvas.width - 100,
+        height: 70
+      };
+      
+      if (mouseX >= rect.x && mouseX <= rect.x + rect.width &&
+          mouseY >= rect.y && mouseY <= rect.y + rect.height) {
+        return i;
+      }
+    }
+    
+    return null;
+  }
+
+  getDifficultyAtPosition(mouseX: number, mouseY: number, canvas: HTMLCanvasElement, difficulties: any[]): number | null {
+    const startY = 180;
+    const spacing = 120;
+    
+    for (let i = 0; i < difficulties.length; i++) {
+      const y = startY + (i * spacing);
+      const rect = {
+        x: 50,
+        y: y - 40,
+        width: canvas.width - 100,
+        height: 100
+      };
+      
+      if (mouseX >= rect.x && mouseX <= rect.x + rect.width &&
+          mouseY >= rect.y && mouseY <= rect.y + rect.height) {
+        return i;
+      }
+    }
+    
+    return null;
+  }
+
+  getMissionAtPosition(mouseX: number, mouseY: number, canvas: HTMLCanvasElement, missions: any[]): number | null {
+    const startY = 100;
+    const itemHeight = 120;
+    
+    for (let i = 0; i < missions.length; i++) {
+      const y = startY + (i * itemHeight);
+      const rect = {
+        x: 50,
+        y: y - 45,
+        width: canvas.width - 100,
+        height: 110
+      };
+      
+      if (mouseX >= rect.x && mouseX <= rect.x + rect.width &&
+          mouseY >= rect.y && mouseY <= rect.y + rect.height) {
+        return i;
+      }
+    }
+    
+    return null;
   }
 }

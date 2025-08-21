@@ -56,6 +56,65 @@ export class LeaderboardSystem {
     }
   }
 
+  // Method to save game state to leaderboard
+  static async saveGameStateToLeaderboard(gameState: any): Promise<boolean | string> {
+    if (!gameState || gameState.gameStatus !== 'victory') {
+      return false;
+    }
+
+    const score = gameState.finalStats.asteroidsDestroyed * 10 + 
+                  gameState.finalStats.enemiesDestroyed * 15 + 
+                  gameState.finalStats.planetsOwned * 50;
+
+    // Check if score is high enough to be saved
+    const leaderboard = await this.getLeaderboard();
+    const isTopTenScore = leaderboard.length < 10 || score > leaderboard[9].score;
+
+    if (isTopTenScore) {
+      // Prompt for player name
+      const playerName = await this.promptPlayerName();
+      
+      if (!playerName) {
+        return false; // User cancelled name entry
+      }
+
+      const stats: Omit<LeaderboardEntry, 'id' | 'timestamp'> = {
+        playerName,
+        score,
+        rank: '', // Empty string, will be determined by sorting
+        mission: gameState.selectedMission?.name || 'Unknown Mission',
+        shipRole: gameState.selectedRole?.name || 'Unknown Role',
+        playTime: gameState.gameTimer.elapsedTime || 0,
+        stats: {
+          materialsCollected: gameState.finalStats.totalMaterials || 0,
+          asteroidsDestroyed: gameState.finalStats.asteroidsDestroyed || 0,
+          enemiesDestroyed: gameState.finalStats.enemiesDestroyed || 0,
+          planetsConquered: gameState.finalStats.planetsOwned || 0,
+          basesBuilt: gameState.finalStats.basesBuilt || 0,
+          spaceMonsterKills: gameState.finalStats.spaceMonsterKills || 0
+        }
+      };
+
+      return this.saveScore(stats);
+    }
+
+    return false;
+  }
+
+  // Method to prompt for player name
+  private static async promptPlayerName(): Promise<string | null> {
+    const playerName = prompt('Congratulations! You got a top 10 score! Enter your name (max 7 characters):', 'Anonymous');
+    
+    if (playerName === null) {
+      return null; // User cancelled
+    }
+
+    // Trim and validate name
+    const trimmedName = playerName.trim().substring(0, 7);
+    
+    return trimmedName || 'Anonymous';
+  }
+
   static async getLeaderboard(): Promise<LeaderboardEntry[]> {
     try {
       const stored = localStorage.getItem(this.STORAGE_KEY);

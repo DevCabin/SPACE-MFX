@@ -11,7 +11,6 @@ export interface ShipInput {
   buyBomb: boolean;
   emergencyMelee: boolean;
   reverse: boolean;
-  mousePosition?: { x: number; y: number };
 }
 
 export class ShipSystem {
@@ -25,7 +24,7 @@ export class ShipSystem {
   private static readonly MELEE_INVINCIBILITY_DURATION = 1.5; // seconds
   private static readonly MELEE_WARNING_DURATION = 2.0; // Warning lasts longer than weapon
 
-  static createShip(role?: ShipRole): Ship {
+static createShip(role?: ShipRole, initialPosition?: { x: number; y: number }): Ship {
     const stats = role?.stats || {
       maxEnergy: 100,
       energyRechargeRate: 15,
@@ -36,8 +35,11 @@ export class ShipSystem {
       weaponFireRate: 0.15
     };
 
+    const shipPosition = initialPosition || { x: 1000, y: 1000 }; // Default to world center
+    console.log(`🚀 Ship Created: Initial Position (${Math.round(shipPosition.x)}, ${Math.round(shipPosition.y)})`);
+
     return {
-      position: { x: 0, y: 0 },
+      position: shipPosition,
       velocity: { x: 0, y: 0 },
       rotation: 0,
       radius: 12,
@@ -62,24 +64,28 @@ export class ShipSystem {
       meleeWarningEndTime: 0,
       isOutOfBounds: false
     };
-  }
+}
 
-  static updateShip(ship: Ship, input: ShipInput, deltaTime: number): void {
-    const currentTime = performance.now() / 1000;
-    
-    // Update invincibility status
-    if (ship.isInvincible && currentTime >= ship.invincibilityEndTime) {
-      ship.isInvincible = false;
-      console.log('Invincibility ended');
-    }
-    
-    // Handle rotation - keyboard only for now
+    static updateShip(ship: Ship, input: ShipInput, deltaTime: number): void {
+        const currentTime = performance.now() / 1000;
+        
+        // Update invincibility status
+        if (ship.isInvincible && currentTime >= ship.invincibilityEndTime) {
+            ship.isInvincible = false;
+            console.log('Invincibility ended');
+        }
+        
+    // Keyboard rotation only
     if (input.rotateLeft) {
-      ship.rotation -= this.ROTATION_SPEED * deltaTime;
+        ship.rotation -= this.ROTATION_SPEED * deltaTime;
     }
     if (input.rotateRight) {
-      ship.rotation += this.ROTATION_SPEED * deltaTime;
+        ship.rotation += this.ROTATION_SPEED * deltaTime;
     }
+    
+    // Normalize rotation to keep it within 0-2π range
+    ship.rotation = ship.rotation % (2 * Math.PI);
+    if (ship.rotation < 0) ship.rotation += 2 * Math.PI;
 
     // Handle thrust
     if (input.thrust && ship.energy > 0) {
@@ -125,6 +131,9 @@ export class ShipSystem {
     ship.position.x += ship.velocity.x * deltaTime;
     ship.position.y += ship.velocity.y * deltaTime;
 
+    // Debug logging for ship movement
+    console.log(`🚀 Ship Position: (${Math.round(ship.position.x)}, ${Math.round(ship.position.y)}) | Velocity: (${ship.velocity.x.toFixed(2)}, ${ship.velocity.y.toFixed(2)})`);
+
     // Slowly regenerate energy
     ship.energy = Math.min(ship.maxEnergy, ship.energy + ship.energyRechargeRate * deltaTime);
   }
@@ -153,6 +162,7 @@ export class ShipSystem {
       }
     }
   }
+
   static canFire(ship: Ship, currentTime: number): boolean {
     return ship.energy >= this.ENERGY_DRAIN_FIRE && 
            (currentTime - ship.lastFireTime) >= ship.weaponFireRate &&
@@ -164,7 +174,6 @@ export class ShipSystem {
     ship.energy -= this.ENERGY_DRAIN_FIRE;
     ship.lastFireTime = currentTime;
   }
-
 
   static addResource(ship: Ship, resourceType: 'rawMaterial' | 'powerGem'): boolean {
     if (resourceType === 'rawMaterial') {
