@@ -63,7 +63,7 @@ export class UISystem {
   ): void {
     if (!this.uiState.showLeaderboard) return;
 
-    const menuWidth = 600;
+    const menuWidth = 700;
     const menuHeight = 700;
     const menuX = (canvas.width - menuWidth) / 2;
     const menuY = (canvas.height - menuHeight) / 2;
@@ -88,12 +88,12 @@ export class UISystem {
     
     // Render leaderboard headers
     ctx.fillStyle = '#cccccc';
-    ctx.font = 'bold 14px monospace';
+    ctx.font = 'bold 12px monospace';
     ctx.textAlign = 'left';
     
-    const headers = ['Rank', 'Player', 'Score', 'Mission', 'Ship Role', 'Play Time'];
-    const columnWidths = [50, 150, 100, 100, 100, 100];
-    let currentX = menuX + 50;
+    const headers = ['Rank', 'Player', 'Score', 'Mission', 'Role', 'Time'];
+    const columnWidths = [60, 100, 80, 140, 120, 80];
+    let currentX = menuX + 20;
     
     headers.forEach((header, index) => {
       ctx.fillText(header, currentX, menuY + 80);
@@ -101,36 +101,40 @@ export class UISystem {
     });
 
     // Render leaderboard entries
-    ctx.font = '12px monospace';
-    leaderboard.slice(0, 10).forEach((entry: any, index: number) => {
-      const y = menuY + 110 + (index * 30);
-      currentX = menuX + 50;
+    ctx.font = '11px monospace';
+    leaderboard.slice(0, 15).forEach((entry: any, index: number) => {
+      const y = menuY + 110 + (index * 25);
+      currentX = menuX + 20;
       
       // Rank
       ctx.fillStyle = index === 0 ? '#ffd700' : index === 1 ? '#c0c0c0' : index === 2 ? '#cd7f32' : '#ffffff';
       ctx.fillText(`#${index + 1}`, currentX, y);
       currentX += columnWidths[0];
       
-      // Player Name
+      // Player Name - truncate if too long
       ctx.fillStyle = '#ffffff';
-      ctx.fillText(entry.playerName || 'Anonymous', currentX, y);
+      const playerName = (entry.playerName || 'Anonymous').substring(0, 12);
+      ctx.fillText(playerName, currentX, y);
       currentX += columnWidths[1];
       
-      // Score
-      ctx.fillText(entry.score.toLocaleString(), currentX, y);
+      // Score - format with commas
+      const scoreText = entry.score.toLocaleString();
+      ctx.fillText(scoreText.length > 8 ? scoreText.substring(0, 8) + '...' : scoreText, currentX, y);
       currentX += columnWidths[2];
       
-      // Mission
-      ctx.fillText(entry.mission || 'Unknown', currentX, y);
+      // Mission - truncate if too long
+      const missionText = (entry.mission || 'Unknown').substring(0, 18);
+      ctx.fillText(missionText, currentX, y);
       currentX += columnWidths[3];
       
-      // Ship Role
-      ctx.fillText(entry.shipRole || 'Unknown', currentX, y);
+      // Ship Role - truncate if too long
+      const roleText = (entry.shipRole || 'Unknown').substring(0, 15);
+      ctx.fillText(roleText, currentX, y);
       currentX += columnWidths[4];
       
       // Play Time
       const minutes = Math.floor((entry.playTime || 0) / 60);
-      ctx.fillText(`${minutes} mins`, currentX, y);
+      ctx.fillText(`${minutes}m`, currentX, y);
     });
 
     // Instructions

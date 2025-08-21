@@ -59,6 +59,7 @@ export class LeaderboardSystem {
   // Method to save game state to leaderboard
   static async saveGameStateToLeaderboard(gameState: any): Promise<boolean | string> {
     if (!gameState || gameState.gameStatus !== 'victory') {
+      console.log('Not saving to leaderboard: game not won or invalid state');
       return false;
     }
 
@@ -66,15 +67,23 @@ export class LeaderboardSystem {
                   gameState.finalStats.enemiesDestroyed * 15 + 
                   gameState.finalStats.planetsOwned * 50;
 
+    console.log(`Victory detected! Score: ${score}`);
+
     // Check if score is high enough to be saved
     const leaderboard = await this.getLeaderboard();
-    const isTopTenScore = leaderboard.length < 10 || score > leaderboard[9].score;
+    const isTopTenScore = leaderboard.length < 10 || score > (leaderboard[9]?.score || 0);
+
+    console.log(`Is top 10 score: ${isTopTenScore}, Current leaderboard entries: ${leaderboard.length}`);
 
     if (isTopTenScore) {
+      console.log('Prompting for player name...');
       // Prompt for player name
       const playerName = await this.promptPlayerName();
       
+      console.log(`Player name entered: ${playerName}`);
+      
       if (!playerName) {
+        console.log('User cancelled name entry');
         return false; // User cancelled name entry
       }
 
@@ -95,24 +104,222 @@ export class LeaderboardSystem {
         }
       };
 
-      return this.saveScore(stats);
+      const saved = await this.saveScore(stats);
+      console.log(`Score saved successfully: ${saved}`);
+      return saved;
     }
 
+    console.log('Score not high enough for top 10');
     return false;
   }
 
-  // Method to prompt for player name
+  // Method to prompt for player name with editing capability
   private static async promptPlayerName(): Promise<string | null> {
-    const playerName = prompt('Congratulations! You got a top 10 score! Enter your name (max 7 characters):', 'Anonymous');
-    
-    if (playerName === null) {
-      return null; // User cancelled
-    }
+    return new Promise((resolve) => {
+      // Create a custom input overlay
+      const overlay = document.createElement('div');
+      overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+        font-family: monospace;
+      `;
 
-    // Trim and validate name
-    const trimmedName = playerName.trim().substring(0, 7);
-    
-    return trimmedName || 'Anonymous';
+      const dialog = document.createElement('div');
+      dialog.style.cssText = `
+        background: #000;
+        border: 2px solid #00ff00;
+        padding: 30px;
+        text-align: center;
+        color: #00ff00;
+        max-width: 400px;
+        width: 90%;
+      `;
+
+      const title = document.createElement('h2');
+      title.textContent = 'CONGRATULATIONS!';
+      title.style.cssText = `
+        color: #00ff00;
+        margin: 0 0 10px 0;
+        font-size: 24px;
+      `;
+
+      const subtitle = document.createElement('p');
+      subtitle.textContent = 'You achieved a top 10 score!';
+      subtitle.style.cssText = `
+        color: #ffffff;
+        margin: 0 0 20px 0;
+        font-size: 16px;
+      `;
+
+      const label = document.createElement('p');
+      label.textContent = 'Enter your name for the leaderboard:';
+      label.style.cssText = `
+        color: #ffffff;
+        margin: 0 0 10px 0;
+        font-size: 14px;
+      `;
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = 'Anonymous';
+      input.maxLength = 7;
+      input.style.cssText = `
+        background: #000;
+        border: 1px solid #00ff00;
+        color: #00ff00;
+        padding: 8px;
+        font-family: monospace;
+        font-size: 16px;
+        text-align: center;
+        width: 150px;
+        margin: 0 0 10px 0;
+        outline: none;
+        cursor: text;
+      `;
+      
+      // Ensure input is focusable and clickable
+      input.tabIndex = 0;
+      input.setAttribute('autocomplete', 'off');
+      input.setAttribute('spellcheck', 'false');
+
+      const charCount = document.createElement('p');
+      charCount.style.cssText = `
+        color: #cccccc;
+        margin: 0 0 20px 0;
+        font-size: 12px;
+      `;
+
+      const updateCharCount = () => {
+        // Enforce 7 character limit
+        if (input.value.length > 7) {
+          input.value = input.value.substring(0, 7);
+        }
+        
+        const remaining = 7 - input.value.length;
+        charCount.textContent = `${input.value.length}/7 characters`;
+        charCount.style.color = remaining < 2 ? '#ff4444' : '#cccccc';
+      };
+
+      input.addEventListener('input', updateCharCount);
+      input.addEventListener('keydown', (e) => {
+        // Prevent typing if at character limit (except for backspace, delete, arrow keys, etc.)
+        if (input.value.length >= 7 && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'Tab'].includes(e.key)) {
+          e.preventDefault();
+        }
+      });
+      input.addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') {
+          submitName();
+        } else if (e.key === 'Escape') {
+          cancelInput();
+        }
+      });
+
+      const buttonContainer = document.createElement('div');
+      buttonContainer.style.cssText = `
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+      `;
+
+      const submitBtn = document.createElement('button');
+      submitBtn.textContent = 'SAVE';
+      submitBtn.style.cssText = `
+        background: #00ff00;
+        color: #000;
+        border: none;
+        padding: 8px 16px;
+        font-family: monospace;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 14px;
+      `;
+
+      const cancelBtn = document.createElement('button');
+      cancelBtn.textContent = 'CANCEL';
+      cancelBtn.style.cssText = `
+        background: #ff4444;
+        color: #fff;
+        border: none;
+        padding: 8px 16px;
+        font-family: monospace;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 14px;
+      `;
+
+      const instructions = document.createElement('p');
+      instructions.textContent = 'Press ENTER to save, ESC to cancel';
+      instructions.style.cssText = `
+        color: #888;
+        margin: 15px 0 0 0;
+        font-size: 12px;
+      `;
+
+      const submitName = () => {
+        const name = input.value.trim().substring(0, 7);
+        document.body.removeChild(overlay);
+        resolve(name || 'Anonymous');
+      };
+
+      const cancelInput = () => {
+        document.body.removeChild(overlay);
+        resolve(null);
+      };
+
+      submitBtn.addEventListener('click', submitName);
+      cancelBtn.addEventListener('click', cancelInput);
+
+      dialog.appendChild(title);
+      dialog.appendChild(subtitle);
+      dialog.appendChild(label);
+      dialog.appendChild(input);
+      dialog.appendChild(charCount);
+      dialog.appendChild(buttonContainer);
+      buttonContainer.appendChild(submitBtn);
+      buttonContainer.appendChild(cancelBtn);
+      dialog.appendChild(instructions);
+      overlay.appendChild(dialog);
+      document.body.appendChild(overlay);
+
+      // Focus the input and select all text - multiple attempts for reliability
+      const focusInput = () => {
+        try {
+          input.focus();
+          input.select();
+          updateCharCount();
+          console.log('Input focused and text selected');
+        } catch (error) {
+          console.error('Failed to focus input:', error);
+        }
+      };
+      
+      // Try multiple times to ensure focus works
+      setTimeout(focusInput, 50);
+      setTimeout(focusInput, 100);
+      setTimeout(focusInput, 200);
+      
+      // Also focus when clicked
+      input.addEventListener('click', () => {
+        input.focus();
+        input.select();
+      });
+      
+      // Force focus when overlay is clicked
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          input.focus();
+        }
+      });
+    });
   }
 
   static async getLeaderboard(): Promise<LeaderboardEntry[]> {

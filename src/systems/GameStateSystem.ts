@@ -127,27 +127,8 @@ export class GameStateSystem {
     
     // Save score to leaderboard only on victory
     if (status === 'victory' && gameState.selectedMission) {
-      const scoreBreakdown = ScoreSystem.calculateScore(stats);
-      
-      // For now, use a simple player name - can be enhanced later
-      const playerName = `Player_${Date.now().toString(36).substr(-4)}`;
-      
-      LeaderboardSystem.saveScore({
-        playerName,
-        score: scoreBreakdown.totalScore,
-        rank: scoreBreakdown.rank,
-        mission: gameState.selectedMission.name,
-        shipRole: gameState.selectedRole?.name || 'Unknown',
-        playTime: stats.playTime,
-        stats: {
-          materialsCollected: stats.materialsCollected,
-          asteroidsDestroyed: stats.asteroidsDestroyed,
-          enemiesDestroyed: stats.enemiesDestroyed,
-          planetsConquered: stats.planetsConquered,
-          basesBuilt: stats.basesBuilt,
-          spaceMonsterKills: stats.spaceMonsterKills
-        }
-      });
+      // Use the new method that prompts for username
+      LeaderboardSystem.saveGameStateToLeaderboard(gameState);
     }
     
     console.log(`Game ended: ${reason}`);
