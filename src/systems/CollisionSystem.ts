@@ -86,20 +86,26 @@ export class CollisionSystem {
     // Enemy is always destroyed on collision
     enemy.active = false;
     
-    // Ship loses 1/3 of energy
-    const energyLoss = ship.maxEnergy / 3;
-    ship.energy -= energyLoss;
+    // Significantly increase damage for enemy collisions
+    const energyLoss = ship.maxEnergy * 0.75; // 75% energy loss instead of 1/3
+    const hullDamage = ship.maxHullStrength * 0.5; // 50% hull damage
     
-    // Check if ship should be destroyed (energy < 1/3 of max)
-    const shipDestroyed = ship.energy < (ship.maxEnergy / 3);
+    ship.energy -= energyLoss;
+    ship.hullStrength -= hullDamage;
+    
+    // Check if ship should be destroyed
+    const shipDestroyed = ship.energy <= 0 || ship.hullStrength <= 0;
     
     if (shipDestroyed) {
       ship.hullStrength = 0; // This will trigger ship destruction in game logic
+      ship.energy = 0;
     }
     
-    console.log(`Ship-Enemy collision! Energy lost: ${Math.round(energyLoss)}, Remaining: ${Math.round(ship.energy)}`);
+    console.log(`SEVERE Ship-Enemy collision! Energy lost: ${Math.round(energyLoss)}, Remaining: ${Math.round(ship.energy)}`);
+    console.log(`Hull damage: ${Math.round(hullDamage)}, Remaining: ${Math.round(ship.hullStrength)}`);
+    
     if (shipDestroyed) {
-      console.log('Ship destroyed due to low energy!');
+      console.log('Ship CRITICALLY DAMAGED by enemy collision!');
     }
     
     return { enemyDestroyed: true, shipDestroyed };

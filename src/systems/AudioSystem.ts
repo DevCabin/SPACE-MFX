@@ -55,17 +55,31 @@ export class AudioSystem {
     const oscillator = this.audioContext.createOscillator();
     const gainNode = this.audioContext.createGain();
     
-    oscillator.connect(gainNode);
+    // Use white noise for a more organic "poof" or "crunch" sound
+    const noiseBuffer = this.audioContext.createBuffer(1, 4096, this.audioContext.sampleRate);
+    const noiseData = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < noiseData.length; i++) {
+      noiseData[i] = Math.random() * 2 - 1;
+    }
+    
+    const noiseSource = this.audioContext.createBufferSource();
+    noiseSource.buffer = noiseBuffer;
+    
+    const bandpassFilter = this.audioContext.createBiquadFilter();
+    bandpassFilter.type = 'bandpass';
+    bandpassFilter.frequency.setValueAtTime(500, this.audioContext.currentTime);
+    bandpassFilter.Q.setValueAtTime(10, this.audioContext.currentTime);
+    
+    noiseSource.connect(bandpassFilter);
+    bandpassFilter.connect(gainNode);
     gainNode.connect(this.audioContext.destination);
     
-    oscillator.frequency.setValueAtTime(150, this.audioContext.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(30, this.audioContext.currentTime + 0.3);
+    // Softer, shorter sound with quick decay
+    gainNode.gain.setValueAtTime(0.05, this.audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.1);
     
-    gainNode.gain.setValueAtTime(0.15, this.audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.3);
-    
-    oscillator.start();
-    oscillator.stop(this.audioContext.currentTime + 0.3);
+    noiseSource.start();
+    noiseSource.stop(this.audioContext.currentTime + 0.1);
   }
 
   static playWeaponFire(): void {
