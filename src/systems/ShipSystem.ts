@@ -62,7 +62,8 @@ static createShip(role?: ShipRole, initialPosition?: { x: number; y: number }): 
       meleeCharging: false,
       meleeChargeStartTime: 0,
       meleeWarningEndTime: 0,
-      isOutOfBounds: false
+      isOutOfBounds: false,
+      totalCargoCollected: 0
     };
 }
 
@@ -195,6 +196,7 @@ static createShip(role?: ShipRole, initialPosition?: { x: number; y: number }): 
           return false;
         }
         ship.cargoMaterials++;
+        ship.totalCargoCollected++;
         console.log(`Material collected! Materials: ${ship.cargoMaterials}, Total cargo: ${totalCargo + 1}/${totalCapacity}`);
       }
     } else if (resourceType === 'powerGem') {
@@ -211,6 +213,7 @@ static createShip(role?: ShipRole, initialPosition?: { x: number; y: number }): 
           return false;
         }
         ship.cargoGems++;
+        ship.totalCargoCollected++;
         console.log(`Power gem collected! Gems: ${ship.cargoGems}, Total cargo: ${totalCargo + 1}/${totalCapacity}`);
       }
     }

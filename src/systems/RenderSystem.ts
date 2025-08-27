@@ -311,7 +311,27 @@ export class RenderSystem {
         this.ctx.translate(screenPos.x, screenPos.y);
         this.ctx.rotate(enemy.rotation);
         
-        if (enemy.enemyType && enemy.enemyType !== 'normal') {
+        if (enemy.enemyType === 'advanced') {
+          // Advanced enemy ship body (hexagon shape, blue color)
+          this.ctx.strokeStyle = '#4444ff';
+          this.ctx.lineWidth = 2;
+          this.ctx.beginPath();
+          
+          // Draw hexagon
+          for (let i = 0; i < 6; i++) {
+            const angle = (i / 6) * Math.PI * 2;
+            const x = Math.cos(angle) * enemy.radius;
+            const y = Math.sin(angle) * enemy.radius;
+            
+            if (i === 0) {
+              this.ctx.moveTo(x, y);
+            } else {
+              this.ctx.lineTo(x, y);
+            }
+          }
+          this.ctx.closePath();
+          this.ctx.stroke();
+        } else if (enemy.enemyType && enemy.enemyType !== 'normal') {
           // Space monster rendering
           this.renderSpaceMonster(enemy);
         } else {

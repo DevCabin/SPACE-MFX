@@ -756,6 +756,8 @@ export class Game {
           if (CosmicEggSystem.isSpaceMonster(collision.enemy)) {
             drops = CosmicEggSystem.createSpaceMonsterDrops(collision.enemy);
             console.log(`Space monster ${collision.enemy.enemyType} defeated! Massive resource drop!`);
+          } else if (collision.enemy.enemyType === 'advanced') {
+            drops = EnemySystem.onAdvancedEnemyKilled(collision.enemy);
           } else {
             drops = EnemyCombatSystem.createEnemyDrops(collision.enemy);
           }
@@ -859,11 +861,13 @@ export class Game {
         }
         this.gameState.finalStats.enemiesDestroyed++;
         
-        // Create drops (special drops for space monsters)
+        // Create drops (special drops for space monsters and advanced enemies)
         let drops: any[];
         if (CosmicEggSystem.isSpaceMonster(collidedEnemy)) {
           drops = CosmicEggSystem.createSpaceMonsterDrops(collidedEnemy);
           console.log(`Space monster ${collidedEnemy.enemyType} destroyed by collision! Massive resource drop!`);
+        } else if (collidedEnemy.enemyType === 'advanced') {
+          drops = EnemySystem.onAdvancedEnemyKilled(collidedEnemy);
         } else {
           drops = EnemyCombatSystem.createEnemyDrops(collidedEnemy);
         }
@@ -1224,7 +1228,11 @@ export class Game {
     for (let i = 0; i < enemyCount; i++) {
       // Slight delay between each enemy spawn in the wave (0-2 seconds)
       setTimeout(() => {
-        const newEnemy = EnemySystem.createEnemy(this.gameState.ship.position);
+        const newEnemy = EnemySystem.createEnemy(
+          this.gameState.ship.position, 
+          this.gameState.currentLevel, 
+          this.gameState.upgradeState.shipLevel
+        );
         
         // Mark enemy as resource carrier if this is a fail-safe spawn
         if (isFailsafeSpawn) {

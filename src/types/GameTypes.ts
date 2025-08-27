@@ -28,6 +28,7 @@ export interface Ship {
   meleeChargeStartTime: number;
   meleeWarningEndTime: number;
   isOutOfBounds: boolean;
+  totalCargoCollected: number; // Track total cargo collected over time
 }
 
 export interface Asteroid {
@@ -90,7 +91,7 @@ export interface Enemy {
   aiState: 'hunting' | 'claiming' | 'defending' | 'expanding';
   targetPlanetId?: string;
   lastNearPlayerTime?: number; // Track when enemy was last near player
-  enemyType?: 'normal' | 'spider' | 'centipede' | 'beetle';
+  enemyType?: 'normal' | 'advanced' | 'spider' | 'centipede' | 'beetle';
   // Space monster specific properties
   spiralAngle?: number; // Current spiral angle
   spiralRadius?: number; // Distance from player

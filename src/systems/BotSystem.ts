@@ -52,8 +52,7 @@ export class BotSystem {
   }
 
   static canPurchaseBot(ship: Ship, botState: BotState): boolean {
-    const totalCargo = ship.cargoMaterials + ship.cargoGems;
-    const hasReachedThreshold = totalCargo >= botState.cargoThreshold;
+    const hasReachedThreshold = ship.totalCargoCollected >= botState.cargoThreshold;
     const hasSpace = botState.bots.length < botState.maxBots;
     const canAfford = ship.cargoMaterials >= botState.purchaseCost.materials && 
                      ship.cargoGems >= botState.purchaseCost.gems;
@@ -267,6 +266,7 @@ export class BotSystem {
         return true;
       } else {
         ship.cargoMaterials++;
+        ship.totalCargoCollected++;
         return true;
       }
     } else if (resource.type === 'powerGem') {
@@ -276,6 +276,7 @@ export class BotSystem {
         return true;
       } else {
         ship.cargoGems++;
+        ship.totalCargoCollected++;
         return true;
       }
     }
@@ -317,7 +318,6 @@ export class BotSystem {
   }
 
   static canShowPurchaseOption(ship: Ship, botState: BotState): boolean {
-    const totalCargo = ship.cargoMaterials + ship.cargoGems;
-    return totalCargo >= botState.cargoThreshold;
+    return ship.totalCargoCollected >= botState.cargoThreshold;
   }
 }

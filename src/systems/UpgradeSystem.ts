@@ -26,6 +26,7 @@ export interface BaseUpgrades {
 export interface UpgradeState {
   shipUpgrades: ShipUpgrades;
   baseUpgrades: BaseUpgrades;
+  shipLevel: number;
 }
 
 export class UpgradeSystem {
@@ -40,8 +41,8 @@ export class UpgradeSystem {
     baseRegen: { materials: 20, gems: 3 }
   };
 
-  private static readonly COST_SCALING = 1.5;
-  private static readonly MAX_UPGRADE_LEVEL = 10;
+  private static readonly COST_SCALING = 1.2;
+  private static readonly MAX_UPGRADE_LEVEL = 15;
 
   static createInitialUpgradeState(): UpgradeState {
     return {
@@ -56,7 +57,8 @@ export class UpgradeSystem {
       baseUpgrades: {
         hpBonus: 0,
         regenBonus: 0
-      }
+      },
+      shipLevel: 1
     };
   }
 
@@ -101,6 +103,9 @@ export class UpgradeSystem {
     upgradeState.shipUpgrades[upgradeType]++;
     this.applyShipUpgrades(ship, upgradeState);
 
+    // Update ship level based on total upgrades
+    this.updateShipLevel(upgradeState);
+
     console.log(`Upgraded ${upgradeType} to level ${upgradeState.shipUpgrades[upgradeType]}! Cost: ${cost.materials} materials, ${cost.gems} gems`);
     return true;
   }
@@ -127,13 +132,16 @@ export class UpgradeSystem {
     upgradeState.baseUpgrades[upgradeKey]++;
     this.applyBaseUpgrades(upgradeState, planets);
 
+    // Update ship level based on total upgrades
+    this.updateShipLevel(upgradeState);
+
     console.log(`Upgraded ${upgradeType} to level ${upgradeState.baseUpgrades[upgradeKey]}! Cost: ${cost.materials} materials, ${cost.gems} gems`);
     return true;
   }
 
   static applyShipUpgrades(ship: Ship, upgradeState: UpgradeState): void {
-    // Store original base stats (assuming they're stored somewhere)
-    // For now, we'll calculate based on current values and upgrade levels
+    // Get base stats from ship's role (we need to store these or calculate from role)
+    // For now, we'll assume some reasonable base values and calculate from there
     
     // Energy capacity: +20 per level
     const energyBonus = upgradeState.shipUpgrades.energyCapacity * 20;
@@ -153,15 +161,39 @@ export class UpgradeSystem {
     // Weapon fire rate: -0.02 per level (faster firing)
     const fireRateBonus = upgradeState.shipUpgrades.weaponFireRate * 0.02;
 
-    // Apply bonuses (this assumes we have base stats stored)
-    // For now, we'll just add to current max values
-    ship.maxEnergy += energyBonus;
-    ship.energyRechargeRate += rechargeBonus;
-    ship.maxHullStrength += hullBonus;
-    ship.maxCargoMaterials += Math.floor(cargoBonus * 0.6); // 60% to materials
-    ship.maxCargoGems += Math.floor(cargoBonus * 0.4); // 40% to gems
-    ship.weaponDamage += damageBonus;
-    ship.weaponFireRate = Math.max(0.05, ship.weaponFireRate - fireRateBonus); // Min 0.05s fire rate
+    // Apply bonuses to base stats (don't stack on current values)
+    // We need to calculate from base values to avoid corruption
+    // This is a temporary fix - ideally we'd store base stats
+    const currentEnergyRatio = ship.energy / ship.maxEnergy;
+    const currentHullRatio = ship.hullStrength / ship.maxHullStrength;
+    
+    // Apply upgrades (only if this is the first time applying or we have a clean state)
+    if (upgradeState.shipUpgrades.energyCapacity > 0) {
+      ship.maxEnergy = Math.max(ship.maxEnergy, 100 + energyBonus); // Assume base 100
+      ship.energy = ship.maxEnergy * currentEnergyRatio;
+    }
+    
+    if (upgradeState.shipUpgrades.energyRecharge > 0) {
+      ship.energyRechargeRate = Math.max(ship.energyRechargeRate, 15 + rechargeBonus); // Assume base 15
+    }
+    
+    if (upgradeState.shipUpgrades.hullStrength > 0) {
+      ship.maxHullStrength = Math.max(ship.maxHullStrength, 100 + hullBonus); // Assume base 100
+      ship.hullStrength = ship.maxHullStrength * currentHullRatio;
+    }
+    
+    if (upgradeState.shipUpgrades.cargoCapacity > 0) {
+      ship.maxCargoMaterials = Math.max(ship.maxCargoMaterials, 20 + Math.floor(cargoBonus * 0.6)); // Assume base 20
+      ship.maxCargoGems = Math.max(ship.maxCargoGems, 10 + Math.floor(cargoBonus * 0.4)); // Assume base 10
+    }
+    
+    if (upgradeState.shipUpgrades.weaponDamage > 0) {
+      ship.weaponDamage = Math.max(ship.weaponDamage, 1 + damageBonus); // Assume base 1
+    }
+    
+    if (upgradeState.shipUpgrades.weaponFireRate > 0) {
+      ship.weaponFireRate = Math.max(0.05, Math.min(ship.weaponFireRate, 0.3 - fireRateBonus)); // Assume base 0.3s
+    }
   }
 
   static applyBaseUpgrades(upgradeState: UpgradeState, planets: Planet[]): void {
@@ -207,5 +239,19 @@ export class UpgradeSystem {
     } else {
       return upgradeState.shipUpgrades[upgradeType as keyof ShipUpgrades] >= this.MAX_UPGRADE_LEVEL;
     }
+  }
+
+  static updateShipLevel(upgradeState: UpgradeState): void {
+    // Calculate total upgrade levels
+    const shipUpgrades = upgradeState.shipUpgrades;
+    const totalShipUpgrades = shipUpgrades.energyCapacity + shipUpgrades.energyRecharge + 
+                             shipUpgrades.hullStrength + shipUpgrades.cargoCapacity + 
+                             shipUpgrades.weaponDamage + shipUpgrades.weaponFireRate;
+    
+    const baseUpgrades = upgradeState.baseUpgrades;
+    const totalBaseUpgrades = baseUpgrades.hpBonus + baseUpgrades.regenBonus;
+    
+    const totalUpgrades = totalShipUpgrades + totalBaseUpgrades;
+    upgradeState.shipLevel = Math.floor(totalUpgrades / 3) + 1; // Every 3 upgrades = 1 level
   }
 }
