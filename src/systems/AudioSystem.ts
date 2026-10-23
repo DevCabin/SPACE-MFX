@@ -52,7 +52,6 @@ export class AudioSystem {
   static playEnemyDestruction(): void {
     if (!this.enabled || !this.audioContext) return;
     
-    const oscillator = this.audioContext.createOscillator();
     const gainNode = this.audioContext.createGain();
     
     // Use white noise for a more organic "poof" or "crunch" sound

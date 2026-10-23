@@ -1,9 +1,9 @@
 # SPACE-MFX: Space Mining Strategy Game
 
-## 🎯 Latest Update - v1.2.1
-**Status**: ✅ FULLY FUNCTIONAL - Leaderboard flow and name entry bug fixes  
+## 🎯 Latest Update - v1.2.2
+**Status**: ✅ FULLY FUNCTIONAL - Build fix and Vercel deploy ready  
 **Date**: October 23, 2026  
-**Commit**: Name entry before level 1 + auto-save leaderboard on game over
+**Commit**: Fixed unused oscillator in AudioSystem blocking production build
 
 ### ✅ Latest Fixes (v1.2.1)
 - **Name Entry Before Level 1**: Player must now enter their name (max 12 chars, required) in a new `nameEntry` phase before gameplay begins — no more broken mid-game modal
