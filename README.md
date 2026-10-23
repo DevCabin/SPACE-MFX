@@ -1,9 +1,16 @@
 # SPACE-MFX: Space Mining Strategy Game
 
-## 🎯 Latest Update - v1.1.0
-**Status**: ✅ FULLY FUNCTIONAL - Core gameplay fixes and UI improvements  
-**Date**: August 21, 2025  
-**Commit**: Critical gameplay fixes and keyboard-only interface
+## 🎯 Latest Update - v1.2.1
+**Status**: ✅ FULLY FUNCTIONAL - Leaderboard flow and name entry bug fixes  
+**Date**: October 23, 2026  
+**Commit**: Name entry before level 1 + auto-save leaderboard on game over
+
+### ✅ Latest Fixes (v1.2.1)
+- **Name Entry Before Level 1**: Player must now enter their name (max 12 chars, required) in a new `nameEntry` phase before gameplay begins — no more broken mid-game modal
+- **Leaderboard Auto-Save on Game Over**: Scores are saved automatically on both victory **and** game over using the pre-entered name; leaderboard displays immediately after death so the player sees their name
+- **Removed Broken Name Modal**: Deleted the `promptPlayerName()` overlay that pre-filled "Anonymous" (truncated to "anonymo" by a `maxLength=7` bug) and fought the canvas for keyboard focus
+- **Added developers.md**: Internal onboarding guide for new contributors
+
 
 ## Overview
 SPACE-MFX is an immersive browser-based space strategy game where players explore, mine, and battle across a dynamic cosmic environment. Manage resources, upgrade your ship, and complete challenging missions in this action-packed space adventure.

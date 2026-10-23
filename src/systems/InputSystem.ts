@@ -59,6 +59,29 @@ export class InputSystem {
     return false;
   }
 
+  // Get a single printable character that was just pressed (for text input like name entry)
+  getJustPressedKey(): string | null {
+    // Letter keys
+    for (let i = 0; i < 26; i++) {
+      const code = `Key${String.fromCharCode(65 + i)}`;
+      if (this.wasKeyJustPressed(code)) {
+        return String.fromCharCode(97 + i); // lowercase letter
+      }
+    }
+    // Digit keys
+    for (let i = 0; i < 10; i++) {
+      const code = `Digit${i}`;
+      if (this.wasKeyJustPressed(code)) {
+        return String(i);
+      }
+    }
+    // Space
+    if (this.wasKeyJustPressed('Space')) {
+      return ' ';
+    }
+    return null;
+  }
+
   isKeyPressed(key: string): boolean {
     return this.keys.has(key);
   }

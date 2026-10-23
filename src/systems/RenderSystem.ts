@@ -1600,6 +1600,41 @@ export class RenderSystem {
     this.ctx.textAlign = 'left';
   }
 
+  renderNameEntry(playerName: string): void {
+    // Semi-transparent overlay
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+    const centerX = this.canvas.width / 2;
+    const centerY = this.canvas.height / 2;
+
+    // Title
+    this.ctx.fillStyle = '#00ff00';
+    this.ctx.font = 'bold 36px monospace';
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText('ENTER YOUR NAME', centerX, centerY - 100);
+
+    // Instructions
+    this.ctx.fillStyle = '#ffffff';
+    this.ctx.font = '20px monospace';
+    this.ctx.fillText('Type your name (max 12 characters)', centerX, centerY - 40);
+
+    // Name input field
+    const displayName = playerName.length > 0 ? playerName + '_' : '_';
+    this.ctx.fillStyle = '#00ff00';
+    this.ctx.font = 'bold 32px monospace';
+    this.ctx.fillText(displayName, centerX, centerY + 20);
+
+    // Confirm hint
+    this.ctx.fillStyle = '#cccccc';
+    this.ctx.font = '16px monospace';
+    this.ctx.fillText('Press ENTER to begin', centerX, centerY + 70);
+    this.ctx.fillText('Press ESC to go back', centerX, centerY + 100);
+
+    // Reset text alignment
+    this.ctx.textAlign = 'left';
+  }
+
   renderLeaderboardScreen(_gameState: GameState): void {
     // Semi-transparent overlay
     this.ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';

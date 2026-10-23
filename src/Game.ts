@@ -45,16 +45,18 @@ export class Game {
   private inputSystem: InputSystem;
   private lastTime: number = 0;
   private isRunning: boolean = false;
-  private gamePhase: 'roleSelection' | 'missionSelection' | 'difficultySelection' | 'playing' = 'roleSelection';
+  private gamePhase: 'roleSelection' | 'missionSelection' | 'difficultySelection' | 'nameEntry' | 'playing' = 'roleSelection';
   private selectedRoleIndex: number = 0;
   private selectedMissionIndex: number = 0;
   private selectedDifficultyIndex: number = 0;
   private selectedRole: ShipRole | null = null;
   private selectedDifficulty: Difficulty | null = null;
+  private playerName: string = '';
   private showQuitConfirmation: boolean = false;
   private failsafeActive: boolean = false;
   private failsafeSpawnCounter: number = 0;
   private currentLevel: number = 1;
+  private autoShowLeaderboard: boolean = false;
 
   constructor(canvas: HTMLCanvasElement) {
     // Initialize systems first
@@ -130,6 +132,7 @@ export class Game {
       spaceMonsterWarnings: [],
       selectedMission: null,
       selectedRole: null,
+      playerName: this.playerName,
       gameTimer,
       currentLevel: this.currentLevel,
       finalStats: {
@@ -170,6 +173,8 @@ export class Game {
       this.updateMissionSelection();
     } else if (this.gamePhase === 'difficultySelection') {
       this.updateDifficultySelection();
+    } else if (this.gamePhase === 'nameEntry') {
+      this.updateNameEntry();
     } else {
       this.update(deltaTime);
     }
@@ -285,51 +290,115 @@ export class Game {
   }
 
   private selectMission(mission: Mission): void {
-    this.gamePhase = 'playing';
-    
-    // Reset enemy combat system for new game
-    EnemyCombatSystem.resetFirstEnemyFlag();
-    
-    // Recreate game state with selected role and mission
-    this.gameState = this.createInitialGameState();
-    this.gameState.ship = ShipSystem.createShip(this.selectedRole!);
+    this.gamePhase = 'nameEntry';
+
+    // Store selection on the current state; the world is built once the name is confirmed
     this.gameState.selectedMission = mission;
     this.gameState.selectedRole = this.selectedRole;
-    
+
+    console.log(`Mission selected: ${mission.name}`);
+    console.log(`Objective: ${mission.objective}`);
+    console.log(`Enter your name to begin...`);
+  }
+
+  private startPlaying(): void {
+    const mission = this.gameState.selectedMission!;
+    const role = this.gameState.selectedRole!;
+
+    this.gameState.playerName = this.playerName;
+
+    // Reset enemy combat system for new game
+    EnemyCombatSystem.resetFirstEnemyFlag();
+
+    // Recreate game state with selected role and mission
+    this.gameState = this.createInitialGameState();
+    this.gameState.ship = ShipSystem.createShip(role);
+    this.gameState.selectedMission = mission;
+    this.gameState.selectedRole = role;
+    this.gameState.playerName = this.playerName;
+
     // Apply difficulty settings to world config
     if (this.selectedDifficulty) {
       this.gameState.worldConfig.enemySpawnInterval *= this.selectedDifficulty.enemySpawnMultiplier;
       this.gameState.worldConfig.cosmicEggMultiplier = this.selectedDifficulty.cosmicEggMultiplier;
-      
+
       // Regenerate asteroids with difficulty multiplier for cosmic eggs
       this.gameState.asteroids = WorldGenerator.generateAsteroidField(
-        this.gameState.worldConfig, 
+        this.gameState.worldConfig,
         this.selectedDifficulty.cosmicEggMultiplier
       );
-      
+
       // Regenerate planets with new asteroid positions
       this.gameState.planets = PlanetSystem.generatePlanets(this.gameState.worldConfig, this.gameState.asteroids);
-      
+
       console.log(`Difficulty: ${this.selectedDifficulty.name}`);
       console.log(`Enemy spawn interval: ${this.gameState.worldConfig.enemySpawnInterval}s (${Math.round(this.selectedDifficulty.enemySpawnMultiplier * 100)}% of normal)`);
       console.log(`Cosmic egg multiplier: ${this.selectedDifficulty.cosmicEggMultiplier}x`);
     }
-    
+
     // Start the game timer
     this.gameState.gameTimer = GameTimerSystem.createTimer();
-    
+
     // Set first enemy attack for 5 seconds - single ship only
     this.gameState.worldConfig.enemySpawnInterval = 3; // Faster first attack
     this.gameState.lastEnemySpawn = performance.now() / 1000; // Start timing from now
-    
-    console.log(`Mission selected: ${mission.name}`);
+
+    this.gamePhase = 'playing';
+
+    console.log(`Mission started: ${mission.name}`);
     console.log(`Objective: ${mission.objective}`);
-    console.log(`Generated ${this.gameState.asteroids.length} asteroids`);
+    console.log(`Player: ${this.playerName} | Generated ${this.gameState.asteroids.length} asteroids`);
+  }
+
+  private updateNameEntry(): void {
+    // Handle quit confirmation
+    if (this.showQuitConfirmation) {
+      this.handleQuitConfirmation();
+      return;
+    }
+
+    // Handle quit key
+    if (this.inputSystem.wasKeyJustPressed('KeyQ')) {
+      this.showQuitConfirmation = true;
+      return;
+    }
+
+    // Allow going back to mission selection
+    if (this.inputSystem.wasKeyJustPressed('Escape')) {
+      this.gamePhase = 'missionSelection';
+      console.log('Returned to mission selection');
+      return;
+    }
+
+    // Handle text input (any single printable character)
+    const key = this.inputSystem.getJustPressedKey();
+    if (key && key.length === 1 && this.playerName.length < 12) {
+      this.playerName += key;
+      return;
+    }
+
+    // Handle backspace
+    if (this.inputSystem.wasKeyJustPressed('Backspace')) {
+      this.playerName = this.playerName.slice(0, -1);
+      return;
+    }
+
+    // Confirm with Enter (requires a non-empty name)
+    if (this.inputSystem.wasKeyJustPressed('Enter')) {
+      if (this.playerName.trim().length > 0) {
+        this.startPlaying();
+      }
+    }
   }
 
   private update(deltaTime: number): void {
     // Skip update if game is over
     if (this.gameState.gameStatus !== 'playing') {
+      // Auto-show leaderboard on game over so the player sees their name
+      if (this.gameState.gameStatus === 'gameOver') {
+        this.autoShowLeaderboard = true;
+      }
+
       // Handle quit confirmation
       if (this.showQuitConfirmation) {
         this.handleQuitConfirmation();
@@ -1040,6 +1109,11 @@ export class Game {
       this.renderSystem.renderDifficultySelection(DIFFICULTIES, this.selectedDifficultyIndex, this.gameState);
     } else if (this.gamePhase === 'missionSelection') {
       this.renderSystem.renderMissionSelection(MISSIONS, this.selectedMissionIndex);
+    } else if (this.gamePhase === 'nameEntry') {
+      this.renderSystem.renderNameEntry(this.playerName);
+    } else if (this.gameState.gameStatus === 'gameOver' && this.autoShowLeaderboard) {
+      UISystem.showLeaderboard();
+      UISystem.renderLeaderboard(this.renderSystem.getContext(), this.renderSystem.getCanvas());
     } else {
       this.renderSystem.render(this.gameState);
     }

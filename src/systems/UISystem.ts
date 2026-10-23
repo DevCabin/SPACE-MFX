@@ -53,6 +53,12 @@ export class UISystem {
     }
   }
 
+  static showLeaderboard(): void {
+    this.uiState.showLeaderboard = true;
+    this.uiState.showUpgradeMenu = false;
+    this.uiState.showBotMenu = false;
+  }
+
   static isLeaderboardOpen(): boolean {
     return this.uiState.showLeaderboard;
   }

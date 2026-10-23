@@ -144,6 +144,7 @@ export interface GameState {
   maxLives: number;
   gameStatus: 'playing' | 'gameOver' | 'victory' | 'leaderboard';
   gameEndReason: string;
+  playerName: string;
   upgradeState: import('../systems/UpgradeSystem').UpgradeState;
   botState: import('../systems/BotSystem').BotState;
   spaceMonsterWarnings: SpaceMonsterWarning[];

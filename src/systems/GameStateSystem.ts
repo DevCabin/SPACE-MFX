@@ -125,9 +125,8 @@ export class GameStateSystem {
       playTime: stats.playTime
     };
     
-    // Save score to leaderboard only on victory
-    if (status === 'victory' && gameState.selectedMission) {
-      // Use the new method that prompts for username
+    // Save score to leaderboard on both victory and game over
+    if (gameState.selectedMission) {
       LeaderboardSystem.saveGameStateToLeaderboard(gameState);
     }
     
