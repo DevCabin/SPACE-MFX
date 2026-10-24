@@ -394,9 +394,10 @@ export class Game {
   private update(deltaTime: number): void {
     // Skip update if game is over
     if (this.gameState.gameStatus !== 'playing') {
-      // Auto-show leaderboard on game over so the player sees their name
-      if (this.gameState.gameStatus === 'gameOver') {
+      // Auto-show leaderboard on game over so the player sees their name (only once)
+      if (this.gameState.gameStatus === 'gameOver' && !this.autoShowLeaderboard) {
         this.autoShowLeaderboard = true;
+        UISystem.showLeaderboard();
       }
 
       // Handle quit confirmation
@@ -1111,8 +1112,7 @@ export class Game {
       this.renderSystem.renderMissionSelection(MISSIONS, this.selectedMissionIndex);
     } else if (this.gamePhase === 'nameEntry') {
       this.renderSystem.renderNameEntry(this.playerName);
-    } else if (this.gameState.gameStatus === 'gameOver' && this.autoShowLeaderboard) {
-      UISystem.showLeaderboard();
+    } else if (this.gameState.gameStatus === 'gameOver' && UISystem.isLeaderboardOpen()) {
       UISystem.renderLeaderboard(this.renderSystem.getContext(), this.renderSystem.getCanvas());
     } else {
       this.renderSystem.render(this.gameState);
